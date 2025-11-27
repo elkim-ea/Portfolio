@@ -1,0 +1,62 @@
+name: AWS CI/CD
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - "Matcha/**"
+      - "docker-compose.yml"
+      - "Deploy/AWS/**"
+      - ".github/workflows/aws-ci-cd.yml"
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions: { id-token: write, contents: read }
+    env:
+      AWS_REGION: ap-northeast-2
+      IMAGE_TAG: ${{ github.sha }}
+      ECR_REPO: ${{ secrets.AWS_ECR_REPO }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build & Push backend
+        run: |
+          BACKEND_URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}-backend:${IMAGE_TAG}"
+          docker build -t $BACKEND_URI -f Matcha/backend/Dockerfile .
+          docker push $BACKEND_URI
+          echo "BACKEND_URI=$BACKEND_URI" >> $GITHUB_ENV
+
+      - name: Build & Push frontend
+        run: |
+          FRONTEND_URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}-frontend:${IMAGE_TAG}"
+          docker build -t $FRONTEND_URI -f Matcha/frontend/Dockerfile .
+          docker push $FRONTEND_URI
+          echo "FRONTEND_URI=$FRONTEND_URI" >> $GITHUB_ENV
+
+      - name: Render compose
+        run: |
+          sed -e "s|\${BACKEND_IMAGE}|${BACKEND_URI}|g" \
+              -e "s|\${FRONTEND_IMAGE}|${FRONTEND_URI}|g" \
+              docker-compose.yml > docker-compose.rendered.yml
+
+      - name: Upload & deploy
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.AWS_EC2_HOST }}
+          username: ${{ secrets.AWS_EC2_USER }}
+          key: ${{ secrets.AWS_EC2_SSH_KEY }}
+          source: "docker-compose.rendered.yml,Deploy/AWS/deploy.sh"
+          target: "/opt/matcha"
+      - uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ secrets.AWS_EC2_HOST }}
+          username: ${{ secrets.AWS_EC2_USER }}
+          key: ${{ secrets.AWS_EC2_SSH_KEY }}
+          script: |
+            chmod +x /opt/matcha/deploy.sh
+            /opt/matcha/deploy.sh

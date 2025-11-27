@@ -1,0 +1,33 @@
+# 운영체제 생성 파일
+.DS_Store
+Thumbs.db
+
+# IDE 설정 파일
+.vscode/
+.idea/
+
+# DB 데이터 (매우 중요)
+db/db_data/
+
+# Backend (Java/Gradle)
+backend/build/
+backend/.gradle/
+backend/out/
+*.jar
+*.war
+
+# Frontend (Node.js/React)
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+.npm/
+npm-debug.log*
+yarn-error.log*
+
+# AI (Python)
+ai/__pycache__/
+ai/*.pyc
+ai/.venv/
+ai/venv/
+
+.env
