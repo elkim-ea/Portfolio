@@ -20,7 +20,7 @@ services:
       retries: 10
 
   backend:
-    image: ${BACKEND_IMAGE}         # CI가 채워주는 최종 이미지
+    image: ${BACKEND_IMAGE}        
     container_name: matcha-backend
     restart: always
     depends_on:
