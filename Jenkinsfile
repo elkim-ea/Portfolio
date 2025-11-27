@@ -17,7 +17,8 @@ pipeline {
             steps {
                 dir('Matcha/backend') {
                     sh 'chmod +x gradlew'
-                    sh './gradlew clean build -x test'
+                    // ❗ 테스트 스킵 제거 → 테스트 실행됨
+                    sh './gradlew clean build'
                 }
             }
         }
@@ -34,7 +35,8 @@ pipeline {
             steps {
                 sshagent(['deploy-ssh']) {
                     sh '''
-                        docker save matcha-backend:latest | ssh -o StrictHostKeyChecking=no root@10.0.2.6 "docker load"
+                        docker save matcha-backend:latest | \
+                        ssh -o StrictHostKeyChecking=no root@10.0.2.6 "docker load"
 
                         ssh -o StrictHostKeyChecking=no root@10.0.2.6 "
                             docker stop matcha-backend || true &&
@@ -47,10 +49,9 @@ pipeline {
         }
     }
 
-    // 🔥 그래프 생성은 여기!
+    // 🔥 JUnit 그래프 생성되는 부분
     post {
         always {
-            // JUnit 테스트 결과 그래프
             junit 'Matcha/backend/build/test-results/test/*.xml'
         }
     }
