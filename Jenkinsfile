@@ -30,12 +30,21 @@ pipeline {
             }
         }
 
-        stage('Push to Deploy Server') {
+        stage('Deploy to Server') {
             steps {
-                sh '''
-                echo "여기서 ssh 또는 docker push로 배포 서버에 전달할 예정"
-                '''
+                sshagent(['deploy-ssh']) { 
+                    sh '''
+                    docker save matcha-backend:latest | ssh -o StrictHostKeyChecking=no root@10.0.2.6 "docker load"
+
+                    ssh -o StrictHostKeyChecking=no root@10.0.2.6 "
+                        docker stop matcha-backend || true &&
+                        docker rm matcha-backend || true &&
+                        docker run -d --name matcha-backend -p 8080:8080 matcha-backend:latest
+                    "
+                    '''
+                }
             }
         }
+
     }
 }
