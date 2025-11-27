@@ -46,4 +46,12 @@ pipeline {
             }
         }
     }
+
+    // 🔥 그래프 생성은 여기!
+    post {
+        always {
+            // JUnit 테스트 결과 그래프
+            junit 'Matcha/backend/build/test-results/test/*.xml'
+        }
+    }
 }
