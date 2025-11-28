@@ -1,15 +1,23 @@
 pipeline {
     agent any
 
-    stages {
+    options {
+        skipDefaultCheckout()
+    }
 
+    stages {
         stage('Checkout') {
             steps {
-                git(
-                    branch: 'main',
-                    credentialsId: 'github-token',
-                    url: 'https://github.com/elkim-ea/Portfolio.git'
-                )
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: '*/main']],
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/elkim-ea/Portfolio.git'
+                    ]]
+                ])
+                dir('matcha-src') {       // ⬅⬅⬅ 이걸 추가해야 matcha-src 내부 파일들을 씀
+                    sh 'ls -al'
+                }
             }
         }
 
