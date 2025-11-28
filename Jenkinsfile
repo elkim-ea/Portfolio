@@ -17,7 +17,6 @@ pipeline {
             steps {
                 dir('Matcha/backend') {
                     sh 'chmod +x gradlew'
-                    // ❗ 테스트 스킵 제거 → 테스트 실행됨
                     sh './gradlew clean build'
                 }
             }
@@ -49,10 +48,18 @@ pipeline {
         }
     }
 
-    // 🔥 JUnit 그래프 생성되는 부분
     post {
         always {
+            // 🔥 1) JUnit 테스트 결과 (Test Trend)
             junit 'Matcha/backend/build/test-results/test/*.xml'
+
+            // 🔥 2) JaCoCo 커버리지 보고서
+            jacoco execPattern: 'Matcha/backend/build/jacoco/test.exec',
+                   classPattern: 'Matcha/backend/build/classes/java/main',
+                   sourcePattern: 'Matcha/backend/src/main/java'
+
+            // 🔥 3) CheckStyle 코드품질 분석 (있을 경우만)
+            recordIssues tools: [checkStyle(pattern: 'Matcha/backend/build/reports/checkstyle/*.xml')]
         }
     }
 }
