@@ -13,6 +13,14 @@ pipeline {
             }
         }
 
+        stage('Check ENV') {
+            steps {
+                sh '''
+                    echo "KEY: $NCP_ACCESS_KEY"
+                    echo "SECRET: $NCP_SECRET_KEY"
+                '''
+            }
+        }
         stage('Build Backend') {
             steps {
                 dir('Matcha/backend') {
