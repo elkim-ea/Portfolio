@@ -50,16 +50,13 @@ pipeline {
 
     post {
         always {
-            // 🔥 1) JUnit 테스트 결과 (Test Trend)
+            //  1) JUnit 테스트 결과 (Test Trend)
             junit 'Matcha/backend/build/test-results/test/*.xml'
 
-            // 🔥 2) JaCoCo 커버리지 보고서
+            //  2) JaCoCo 커버리지 보고서
             jacoco execPattern: 'Matcha/backend/build/jacoco/test.exec',
                    classPattern: 'Matcha/backend/build/classes/java/main',
                    sourcePattern: 'Matcha/backend/src/main/java'
-
-            // 🔥 3) CheckStyle 코드품질 분석 (있을 경우만)
-            recordIssues tools: [checkStyle(pattern: 'Matcha/backend/build/reports/checkstyle/*.xml')]
         }
     }
 }
