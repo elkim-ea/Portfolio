@@ -60,6 +60,7 @@ pipeline {
                                 --name matcha-backend \
                                 -e NCP_ACCESS_KEY=$NCP_ACCESS_KEY \
                                 -e NCP_SECRET_KEY=$NCP_SECRET_KEY \
+                                -e SPRING_PROFILES_ACTIVE=prod \
                                 -p 8080:8080 matcha-backend:latest
                         "
                     '''
