@@ -2,11 +2,13 @@ server:
   port: 8080
 
 spring:
+  spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/matcha_world_prod_db?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    url: jdbc:mariadb://matcha-db:3306/matcha_world_dev_db
     username: root
     password: 1234
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    driver-class-name: org.mariadb.jdbc.Driver
+
 
   jpa:
     hibernate:

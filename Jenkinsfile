@@ -20,15 +20,6 @@ pipeline {
             }
         }
 
-        stage('Check ENV') {
-            steps {
-                sh '''
-                    echo "KEY: $NCP_ACCESS_KEY"
-                    echo "SECRET: $NCP_SECRET_KEY"
-                '''
-            }
-        }
-
         stage('Build Backend') {
             steps {
                 dir('Matcha/backend') {
@@ -53,9 +44,6 @@ pipeline {
                         echo "=== Save docker image ==="
                         docker save matcha-backend:latest -o matcha_image.tar
 
-                        echo "=== Check image file ==="
-                        ls -lh matcha_image.tar
-
                         echo "=== Transfer to deploy-server ==="
                         scp -o StrictHostKeyChecking=no matcha_image.tar root@10.0.2.6:/opt/matcha/
 
@@ -73,16 +61,6 @@ pipeline {
                     '''
                 }
             }
-        }
-    }
-
-    post {
-        always {
-            // junit 'Matcha/backend/build/test-results/test/*.xml'
-
-            // jacoco execPattern: 'Matcha/backend/build/jacoco/test.exec',
-            //        classPattern: 'Matcha/backend/build/classes/java/main',
-            //        sourcePattern: 'Matcha/backend/src/main/java'
         }
     }
 }

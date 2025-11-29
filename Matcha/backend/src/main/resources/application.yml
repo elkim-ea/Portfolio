@@ -1,3 +1,6 @@
 spring:
-  profiles:
-    active: prod
+  datasource:
+    url: jdbc:mariadb://matcha-db:3306/matcha_world_dev_db
+    username: root
+    password: 1234
+    driver-class-name: org.mariadb.jdbc.Driver
