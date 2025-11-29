@@ -33,9 +33,14 @@ management:
     web:
       exposure:
         include: "*"
+
   endpoint:
     health:
       show-details: always
+
   health:
     db:
       enabled: false
+    mail:
+      enabled: false
+  
