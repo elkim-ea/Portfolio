@@ -15,9 +15,7 @@ pipeline {
                         url: 'https://github.com/elkim-ea/Portfolio.git'
                     ]]
                 ])
-                dir('matcha-src') {       // ⬅⬅⬅ 이걸 추가해야 matcha-src 내부 파일들을 씀
-                    sh 'ls -al'
-                }
+               
             }
         }
 
