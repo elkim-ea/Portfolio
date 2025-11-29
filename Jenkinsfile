@@ -56,7 +56,11 @@ pipeline {
                         ssh -o StrictHostKeyChecking=no root@10.0.2.6 "
                             docker stop matcha-backend || true
                             docker rm matcha-backend || true
-                            docker run -d --restart always --name matcha-backend -p 8080:8080 matcha-backend:latest
+                            docker run -d --restart always \
+                                --name matcha-backend \
+                                -e NCP_ACCESS_KEY=$NCP_ACCESS_KEY \
+                                -e NCP_SECRET_KEY=$NCP_SECRET_KEY \
+                                -p 8080:8080 matcha-backend:latest
                         "
                     '''
                 }
