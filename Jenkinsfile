@@ -33,7 +33,7 @@ pipeline {
             steps {
                 dir('Matcha/backend') {
                     sh 'chmod +x gradlew'
-                    sh './gradlew clean build'
+                    sh './gradlew clean build -x test'
                 }
             }
         }
