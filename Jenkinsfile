@@ -49,19 +49,30 @@ pipeline {
             steps {
                 sshagent(['deploy-ssh']) {
                     sh '''
-                        docker save matcha-backend:latest | \
-                        ssh -o StrictHostKeyChecking=no root@10.0.2.6 "docker load"
+                        echo "=== Save Docker Image ==="
+                        docker save matcha-backend:latest -o matcha_image.tar
 
+                        echo "=== Check saved file ==="
+                        ls -lh matcha_image.tar
+
+                        echo "=== Transfer image to deploy-server ==="
+                        scp -o StrictHostKeyChecking=no matcha_image.tar root@10.0.2.6:/opt/matcha/
+
+                        echo "=== Load image on deploy-server ==="
                         ssh -o StrictHostKeyChecking=no root@10.0.2.6 "
-                            docker stop matcha-backend || true &&
-                            docker rm matcha-backend || true &&
-                            docker run -d --name matcha-backend -p 8080:8080 matcha-backend:latest
+                            docker load -i /opt/matcha/matcha_image.tar
+                        "
+
+                        echo "=== Restart container ==="
+                        ssh -o StrictHostKeyChecking=no root@10.0.2.6 "
+                            docker stop matcha-backend || true
+                            docker rm matcha-backend || true
+                            docker run -d --restart always --name matcha-backend -p 8080:8080 matcha-backend:latest
                         "
                     '''
                 }
             }
         }
-    }
 
     post {
         always {
