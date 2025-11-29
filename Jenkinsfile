@@ -6,9 +6,10 @@ pipeline {
     }
 
     stages {
+
         stage('Checkout') {
             steps {
-               checkout([
+                checkout([
                     $class: 'GitSCM',
                     branches: [[name: '*/main']],
                     userRemoteConfigs: [[
@@ -16,7 +17,6 @@ pipeline {
                         credentialsId: 'github-jenkins-token'
                     ]]
                 ])
-               
             }
         }
 
@@ -28,6 +28,7 @@ pipeline {
                 '''
             }
         }
+
         stage('Build Backend') {
             steps {
                 dir('Matcha/backend') {
@@ -49,13 +50,13 @@ pipeline {
             steps {
                 sshagent(['deploy-ssh']) {
                     sh '''
-                        echo "=== Save Docker Image ==="
+                        echo "=== Save docker image ==="
                         docker save matcha-backend:latest -o matcha_image.tar
 
-                        echo "=== Check saved file ==="
+                        echo "=== Check image file ==="
                         ls -lh matcha_image.tar
 
-                        echo "=== Transfer image to deploy-server ==="
+                        echo "=== Transfer to deploy-server ==="
                         scp -o StrictHostKeyChecking=no matcha_image.tar root@10.0.2.6:/opt/matcha/
 
                         echo "=== Load image on deploy-server ==="
@@ -73,13 +74,12 @@ pipeline {
                 }
             }
         }
+    }
 
     post {
         always {
-            //  1) JUnit 테스트 결과 (Test Trend)
             junit 'Matcha/backend/build/test-results/test/*.xml'
 
-            //  2) JaCoCo 커버리지 보고서
             jacoco execPattern: 'Matcha/backend/build/jacoco/test.exec',
                    classPattern: 'Matcha/backend/build/classes/java/main',
                    sourcePattern: 'Matcha/backend/src/main/java'
