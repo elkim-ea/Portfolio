@@ -8,11 +8,12 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                checkout([
+               checkout([
                     $class: 'GitSCM',
                     branches: [[name: '*/main']],
                     userRemoteConfigs: [[
-                        url: 'https://github.com/elkim-ea/Portfolio.git'
+                        url: 'https://github.com/elkim-ea/Portfolio.git',
+                        credentialsId: 'github-jenkins-token'
                     ]]
                 ])
                
