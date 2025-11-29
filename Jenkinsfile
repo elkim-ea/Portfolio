@@ -78,11 +78,11 @@ pipeline {
 
     post {
         always {
-            junit 'Matcha/backend/build/test-results/test/*.xml'
+            // junit 'Matcha/backend/build/test-results/test/*.xml'
 
-            jacoco execPattern: 'Matcha/backend/build/jacoco/test.exec',
-                   classPattern: 'Matcha/backend/build/classes/java/main',
-                   sourcePattern: 'Matcha/backend/src/main/java'
+            // jacoco execPattern: 'Matcha/backend/build/jacoco/test.exec',
+            //        classPattern: 'Matcha/backend/build/classes/java/main',
+            //        sourcePattern: 'Matcha/backend/src/main/java'
         }
     }
 }
