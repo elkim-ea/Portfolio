@@ -43,7 +43,9 @@ public class SecurityConfig {
         "/api/ai/**", // AI 분석 API
         "/api/auth/**", // 회원가입 / 로그인 관련
         "/uploads/**", // 정적 리소스 (로고, 이미지)
-        "/api/record/**" // 기록하기 API
+        "/api/record/**", // 기록하기 API
+        "/actuator/health",
+        "/actuator/**"
     };
 
     @Bean
@@ -73,9 +75,12 @@ public class SecurityConfig {
         http
                 // JWT만 사용하므로 세션 비활성화
                 .csrf(csrf -> csrf.disable())
+                
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // 요청별 접근 제어
                 .authorizeHttpRequests(req -> req
+                    .requestMatchers("/actuator/health").permitAll()
+                    .requestMatchers("/actuator/**").permitAll()
                     .requestMatchers("/uploads/**", "/css/**", "/js/**", "/images/**").permitAll()
                     .requestMatchers(WHITE_LIST_URLS).permitAll()
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Preflight 요청 전역 허용
