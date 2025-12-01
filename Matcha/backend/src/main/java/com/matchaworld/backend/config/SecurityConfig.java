@@ -54,6 +54,7 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(req -> req
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                    .requestMatchers("/actuator/health").permitAll()
                     .requestMatchers(WHITE_LIST_URLS).permitAll()
                     .requestMatchers("/uploads/**", "/css/**", "/js/**", "/images/**").permitAll()
                     .requestMatchers("/api/admin/**").hasRole("ADMIN")

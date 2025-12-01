@@ -5,6 +5,11 @@ pipeline {
         skipDefaultCheckout()
     }
 
+    environment {
+        NCP_ACCESS_KEY = credentials('ncp-access-key')
+        NCP_SECRET_KEY = credentials('ncp-secret-key')
+    }
+
     stages {
 
         stage('Checkout') {
@@ -40,6 +45,7 @@ pipeline {
         stage('Deploy to Server') {
             steps {
                 sshagent(['deploy-ssh']) {
+
                     sh '''
                         echo "=== Save docker image ==="
                         docker save matcha-backend:latest -o matcha_image.tar
@@ -54,13 +60,16 @@ pipeline {
 
                         echo "=== Restart container ==="
                         ssh -o StrictHostKeyChecking=no root@10.0.2.6 "
+                            NCP_ACCESS_KEY=${NCP_ACCESS_KEY} \\
+                            NCP_SECRET_KEY=${NCP_SECRET_KEY} \\
                             docker stop matcha-backend || true
                             docker rm matcha-backend || true
-                            docker run -d --restart always \
-                                --name matcha-backend \
-                                -e NCP_ACCESS_KEY=$NCP_ACCESS_KEY \
-                                -e NCP_SECRET_KEY=$NCP_SECRET_KEY \
-                                -e SPRING_PROFILES_ACTIVE=prod \
+
+                            docker run -d --restart always \\
+                                --name matcha-backend \\
+                                -e NCP_ACCESS_KEY=${NCP_ACCESS_KEY} \\
+                                -e NCP_SECRET_KEY=${NCP_SECRET_KEY} \\
+                                -e SPRING_PROFILES_ACTIVE=prod \\
                                 -p 8080:8080 matcha-backend:latest
                         "
                     '''
