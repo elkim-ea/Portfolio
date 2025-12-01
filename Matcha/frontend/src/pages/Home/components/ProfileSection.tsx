@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axiosAuth from "@/api/axiosAuth";
 import defaultChar from "../../../assets/character/default.png";
+const IMG_BASE = import.meta.env.VITE_IMG_BASE_URL;
 
 export default function ProfileSection() {
   const [user, setUser] = useState<any>(null);
@@ -64,10 +65,11 @@ export default function ProfileSection() {
 
       {/* ✅ 캐릭터 이미지 표시 (하드코딩 경로 사용) */}
       <div className="w-28 h-28 mx-auto my-4">
+
         <img
           src={
             currentLevel.img
-              ? `http://localhost:8080${currentLevel.img}`
+              ? `${IMG_BASE}${currentLevel.img}`
               : defaultChar
           }
           alt="캐릭터"

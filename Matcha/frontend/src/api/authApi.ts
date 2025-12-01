@@ -2,7 +2,7 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 
 // API 기본 설정
-const API_BASE_URL: string = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+const API_BASE_URL: string = import.meta.env.VITE_API_BASE_URL;
 
 // ============ Token 관리 함수 (로컬스토리지 사용) ============
 export const setAccessToken = (token: string) => {

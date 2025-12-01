@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const apiClient = axios.create({
-  baseURL: "http://localhost:8080/api", // ✅ 백엔드 포트랑 prefix 반드시 포함
+  baseURL: import.meta.env.VITE_API_BASE_URL,
   withCredentials: true,
 });
 
