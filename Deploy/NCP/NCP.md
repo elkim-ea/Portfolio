@@ -27,8 +27,9 @@ Frontend는 Deploy Server 내부 80 포트에서만 제공 (Internal Only) 되�
 | 9 | Backend 컨테이너가 Load Balancer Target Group에 연결됨 |
 | 10 | Client Browser ➜ LB ➜ Backend(8080) 호출 |
 
-🏗 전체 NCP 아키텍처 다이어그램
-<img src="./docs/architecture.png" width="700">
+🏗 전체 NCP 아키텍처 다이어그램  
+
+<img src="./docs/architecture.png" width="800">
 
 ### 🧱 2. 네트워크 구성 (VPC / Subnet / Routing / NAT)
 ✔ 2-1) VPC 구성 정보
