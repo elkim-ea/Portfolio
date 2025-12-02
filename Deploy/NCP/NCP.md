@@ -28,7 +28,7 @@ Frontend는 Deploy Server 내부 80 포트에서만 제공 (Internal Only) 되�
 | 10 | Client Browser ➜ LB ➜ Backend(8080) 호출 |
 
 🏗 전체 NCP 아키텍처 다이어그램
-<img src="./docs/architecture.png" width="900">
+<img src="./docs/architecture.png" width="700">
 
 ### 🧱 2. 네트워크 구성 (VPC / Subnet / Routing / NAT)
 ✔ 2-1) VPC 구성 정보
@@ -61,7 +61,7 @@ Frontend는 Deploy Server 내부 80 포트에서만 제공 (Internal Only) 되�
 
 📸 NAT Gateway 이미지
 
-<img src="./docs/nat-gateway.png" width="650">
+<img src="./docs/nat-gateway.png" width="700">
 
 ### 🔐 3. 보안 구성 (ACG)
 ✔ 3-1) Jenkins ACG
@@ -81,8 +81,8 @@ Frontend는 Deploy Server 내부 80 포트에서만 제공 (Internal Only) 되�
 
 📸 ACG UI 이미지
 
-<img src="./docs/jenkins-acg.png" width="650">
-<img src="./docs/deploy-acg.png" width="650">
+<img src="./docs/jenkins-acg.png" width="700">
+<img src="./docs/deploy-acg.png" width="700">
 
 
 ### 🏛 4. 서버 구성
@@ -104,14 +104,15 @@ Frontend는 Deploy Server 내부 80 포트에서만 제공 (Internal Only) 되�
 
 📸 Jenkins UI 이미지
 
-<img src="./docs/jenkins-dashboard.png" width="800">
+<img src="./docs/jenkins-dashboard.png" width="700">
 
 
 📸 Jenkins Build Trend
 
-<img src="./docs/jenkins-trend.png" width="800">
+<img src="./docs/jenkins-trend.png" width="700">
 
 ✔ Jenkinsfile 요약 버전
+```groovy  
 pipeline {
   agent any
 
@@ -136,8 +137,10 @@ pipeline {
     }
   }
 }
+```
 
 ### 🐳 6. Deploy Server (docker-compose)
+```groovy  
 version: "3.8"
 
 services:
@@ -155,7 +158,7 @@ services:
     image: mariadb:10.6
     environment:
       MYSQL_ROOT_PASSWORD: 1234
-
+```
 
 📸 docker-compose 실행 화면
 
@@ -173,8 +176,8 @@ services:
 
 <img src="./docs/lb1.png" width="700">
 <img src="./docs/lb1.png" width="700">
-<img src="./docs/lb1.png" width="350">
-<img src="./docs/lb1.png" width="350">
+<img src="./docs/lb1.png" width="700">
+<img src="./docs/lb1.png" width="700">
 
 ### 🎉 8. 서비스 결과 화면
 <img src="./docs/web1.png" width="700">
@@ -183,16 +186,16 @@ services:
 
 
 ### 📝 9. 전체 프로젝트 구조
-PORTFOLIO
- ├── Deploy
- │   ├── AWS
- │   ├── GCP
- │   └── NCP   ← 본 문서 설명
- ├── Matcha   ← ESG FullStack App
- ├── Jenkinsfile
- └── README.md
+PORTFOLIO          
+ ├── Deploy            
+ │   ├── AWS            
+ │   ├── GCP           
+ │   └── NCP    ← 본 문서 설명          
+ ├── Matcha   ← ESG FullStack App           
+ ├── Jenkinsfile               
+ └── README.md                      
 
-⭐ 10. 핵심 요약 (포트폴리오 어필용)
+### ⭐ 10. 핵심 요약 
 ✔ NCP 기반 실무형 DevOps CI/CD 구축  
 ✔ Jenkins Public + Deploy Private 구조로 보안 강화  
 ✔ NAT Gateway 기반 Private Subnet 외부 통신 구성  
