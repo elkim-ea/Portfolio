@@ -3,15 +3,15 @@
 React + Spring Boot + Docker + Jenkins + LoadBalancer + NAT Gateway
 
 본 프로젝트는 Naver Cloud Platform(NCP) 환경에서
-Frontend(React) + Backend(Spring Boot) + MariaDB를 완전 자동화 CI/CD 파이프라인으로 배포하기 위해 설계되었습니다.
+Frontend(React) + Backend(Spring Boot) + MariaDB를 완전 자동화 CI/CD 파이프라인으로 배포하기 위해 설계
 
 Jenkins는 Public Subnet, Deploy Server는 Private Subnet,
 Backend는 LoadBalancer를 통해 외부 공개,
-Frontend는 Deploy Server 내부 80 포트에서만 제공 (Internal Only) 되는 구조입니다.
+Frontend는 Deploy Server 내부 80 포트에서만 제공 (Internal Only) 되는 구조
 
 ### 📌 1. 전체 아키텍처 개요
 
-아래는 시스템의 전체 CI/CD 동작 흐름입니다.
+아래는 시스템의 전체 CI/CD 동작 흐름
 
 ✔ CI/CD 전체 동작 흐름
 | 번호 | 동작 |
@@ -192,7 +192,7 @@ PORTFOLIO
  │   ├── AWS            
  │   ├── GCP           
  │   └── NCP    ← 본 문서 설명          
- ├── Matcha   ← ESG FullStack App           
+ ├── Matcha     ← ESG FullStack App           
  ├── Jenkinsfile               
  └── README.md                      
 
