@@ -55,6 +55,7 @@ Below is the complete CI/CD workflow:
 | public-subnet-2 | 10.0.5.0/24 | KR-1 | LoadBalancer Zone B |
 
 📸 Subnet List Screenshot
+
 <img src="./docs(eng)/subnet-list.png" width="700">
 
 
@@ -66,8 +67,8 @@ Below is the complete CI/CD workflow:
 | 10.0.0.0/16 | LOCAL | Internal VPC communication |
 
 📸 NAT Gateway Screenshot  
-<img src="./docs(eng)/nat-gateway.png" width="700">
 
+<img src="./docs(eng)/nat-gateway.png" width="700">
 
 ## 🔐 3. Security Configuration (ACG)
 
@@ -77,7 +78,6 @@ Below is the complete CI/CD workflow:
 |----------|------|----------------|
 | TCP | 22 | 0.0.0.0/0 |
 | TCP | 8080 | 0.0.0.0/0 |
-
 
 ### ✔ 3-2) Deploy Server ACG
 
@@ -89,6 +89,7 @@ Below is the complete CI/CD workflow:
 | 3306 | Private Only | DB internal communication |
 
 📸 ACG Screenshots  
+
 <img src="./docs(eng)/jenkins-acg.png" width="700">  
 <img src="./docs(eng)/deploy-acg.png" width="700">
 
@@ -114,12 +115,13 @@ Below is the complete CI/CD workflow:
 7. docker load → restart containers  
 
 📸 Jenkins UI  
+
 <img src="./docs(eng)/jenkins-dashboard.png" width="700">
 
 📸 Jenkins Build Trend  
+
 <img src="./docs(eng)/jenkins-trend.png" width="700">
 
----
 
 ### ✔ Jenkinsfile (Summary)
 
@@ -173,18 +175,22 @@ services:
 ```
 
 📸 docker-compose execution
+
 <img src="./docs(eng)/docker-compose-run.png" width="700">
 
 ## 🌐 7. LoadBalancer Configuration
-Item	Value
-LB Subnets	public-subnet-1, public-subnet-2
-Target Group	Deploy Server Backend (8080)
-Health Check	/actuator/health
+| Item	| Value |       
+|------|-----------------------------|         
+| LB Subnets	| public-subnet-1, public-subnet-2 |           
+| Target Group	| Deploy Server Backend (8080) |            
+| Health Check	| /actuator/health |                   
 
 📸 LB Health Check
+
 <img src="./docs(eng)/lb1.png" width="700">
-<img src="./docs(eng)/lb1.png" width="700">
-<img src="./docs(eng)/lb1.png" width="700">
+<img src="./docs(eng)/lb2.png" width="700">
+<img src="./docs(eng)/lb3.png" width="700">
+<img src="./docs(eng)/lb4.png" width="700">
 
 ## 🎉 8. Service Result Screens
 <img src="./docs(eng)/web1.png" width="700">
@@ -202,9 +208,9 @@ PORTFOLIO
  └── README.md                 
 
 ## ⭐ 10. Key Takeaways
-✔ Practical DevOps CI/CD environment on NCP
-✔ Jenkins Public + Deploy Private architecture (secure)
-✔ NAT Gateway enables outbound communication from private subnet
-✔ LoadBalancer provides stable backend service
-✔ Docker-based automated build & deploy pipeline
-✔ Fully automated workflow: GitHub → Jenkins → Deploy Server → LB
+✔ Practical DevOps CI/CD environment on NCP             
+✔ Jenkins Public + Deploy Private architecture (secure)             
+✔ NAT Gateway enables outbound communication from private subnet               
+✔ LoadBalancer provides stable backend service              
+✔ Docker-based automated build & deploy pipeline               
+✔ Fully automated workflow: GitHub → Jenkins → Deploy Server → LB                      
