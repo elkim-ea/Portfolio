@@ -1,7 +1,14 @@
-build/
 .gradle/
 .git/
-src/
-uploads/
-**/*.md
+.idea/
 *.iml
+**/*.md
+
+# Ignore general build and cache
+build/
+
+# Allow jar build output
+!build/libs/*.jar
+
+# Allow uploads folder
+!uploads/
