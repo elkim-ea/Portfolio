@@ -44,7 +44,7 @@ jobs:
         gcloud auth activate-service-account --key-file=${HOME}/key.json
 
     # -------------------------------------------
-    # Step 3 — Backend JAR Build (Docker Build 이전!)..
+    # Step 3 — Backend JAR Build (Docker Build 이전!)...
     # -------------------------------------------
     - name: Build Backend JAR
       run: |
