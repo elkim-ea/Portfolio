@@ -10,5 +10,5 @@ build/
 # Allow jar build output
 !build/libs/*.jar
 
-# Allow uploads folder
+# Allow uploads folder.
 !uploads/
