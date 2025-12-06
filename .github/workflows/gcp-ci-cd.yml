@@ -1,65 +1,63 @@
-name: GCP CI/CD
+name: Deploy Backend to GKE Autopilot
+
 on:
   push:
-    branches: [ main ]
-    paths:
-      - "Matcha/**"
-      - "docker-compose.yml"
-      - "Deploy/GCP/**"
-      - ".github/workflows/gcp-ci-cd.yml"
+    branches: [ "main" ]
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GAR_LOCATION: asia-northeast3
+  GAR_REPO: matcha-repo
+  IMAGE_NAME: matcha-backend
+  GKE_CLUSTER: ${{ secrets.GKE_CLUSTER }}
+  GKE_LOCATION: ${{ secrets.GKE_LOCATION }}
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    permissions: { id-token: write, contents: read }
-    env:
-      GCP_PROJECT: ${{ secrets.GCP_PROJECT }}
-      REGION: asia-northeast3
-      REPO: matcha
-      IMAGE_TAG: ${{ github.sha }}
+
     steps:
-      - uses: actions/checkout@v4
+    - name: Checkout Code
+      uses: actions/checkout@v4
 
-      - uses: google-github-actions/auth@v2
-        with:
-          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDP }}
-          service_account: ${{ secrets.GCP_SA_EMAIL }}
-      - uses: google-github-actions/setup-gcloud@v2
-      - run: gcloud auth configure-docker ${REGION}-docker.pkg.dev --quiet
+    # -------------------------------------------
+    # 1) gcloud 설치
+    # -------------------------------------------
+    - name: Set up gcloud CLI
+      uses: google-github-actions/setup-gcloud@v2
+      with:
+        service_account_key: ${{ secrets.GCP_SA_KEY }}
+        project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-      - name: Build & Push backend
-        run: |
-          BACKEND_URI="${REGION}-docker.pkg.dev/${GCP_PROJECT}/${REPO}/matcha-backend:${IMAGE_TAG}"
-          docker build -t $BACKEND_URI -f Matcha/backend/Dockerfile .
-          docker push $BACKEND_URI
-          echo "BACKEND_URI=$BACKEND_URI" >> $GITHUB_ENV
+    # -------------------------------------------
+    # 2) Artifact Registry 인증
+    # -------------------------------------------
+    - name: Configure Docker for Artifact Registry
+      run: |
+        gcloud auth configure-docker $GAR_LOCATION-docker.pkg.dev
 
-      - name: Build & Push frontend
-        run: |
-          FRONTEND_URI="${REGION}-docker.pkg.dev/${GCP_PROJECT}/${REPO}/matcha-frontend:${IMAGE_TAG}"
-          docker build -t $FRONTEND_URI -f Matcha/frontend/Dockerfile .
-          docker push $FRONTEND_URI
-          echo "FRONTEND_URI=$FRONTEND_URI" >> $GITHUB_ENV
+    # -------------------------------------------
+    # 3) Docker 이미지 Build + Push
+    # -------------------------------------------
+    - name: Build Docker Image
+      run: |
+        docker build -t $GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest ./backend
 
-      - name: Render compose
-        run: |
-          sed -e "s|\${BACKEND_IMAGE}|${BACKEND_URI}|g" \
-              -e "s|\${FRONTEND_IMAGE}|${FRONTEND_URI}|g" \
-              docker-compose.yml > docker-compose.rendered.yml
+    - name: Push Docker Image
+      run: |
+        docker push $GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest
 
-      - name: Upload & deploy
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.GCP_VM_HOST }}
-          username: ${{ secrets.GCP_VM_USER }}
-          key: ${{ secrets.GCP_VM_SSH_KEY }}
-          source: "docker-compose.rendered.yml,Deploy/GCP/deploy.sh"
-          target: "/opt/matcha"
-      - uses: appleboy/ssh-action@v1.1.0
-        with:
-          host: ${{ secrets.GCP_VM_HOST }}
-          username: ${{ secrets.GCP_VM_USER }}
-          key: ${{ secrets.GCP_VM_SSH_KEY }}
-          script: |
-            chmod +x /opt/matcha/deploy.sh
-            /opt/matcha/deploy.sh
+    # -------------------------------------------
+    # 4) GKE 클러스터 연결
+    # -------------------------------------------
+    - name: Authenticate to GKE
+      run: |
+        gcloud container clusters get-credentials $GKE_CLUSTER --region $GKE_LOCATION --project $PROJECT_ID
+
+    # -------------------------------------------
+    # 5) Kubernetes Deploy
+    # -------------------------------------------
+    - name: Deploy to GKE Autopilot
+      run: |
+        kubectl apply -f k8s/backend-deployment.yaml
+        kubectl apply -f k8s/backend-service.yaml
