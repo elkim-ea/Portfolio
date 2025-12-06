@@ -17,6 +17,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
     - name: Checkout Code
       uses: actions/checkout@v4
 
@@ -28,7 +29,7 @@ jobs:
         echo "${{ secrets.GCP_SA_KEY }}" | base64 --decode > ${HOME}/key.json
 
     ############################################
-    # 2) gcloud 설치 및 기본 인증
+    # 2) gcloud 기본 설정
     ############################################
     - name: Set up gcloud
       uses: google-github-actions/setup-gcloud@v2
@@ -37,22 +38,28 @@ jobs:
         project_id: ${{ secrets.GCP_PROJECT_ID }}
         export_default_credentials: true
 
-    ############################################
-    # 3) Service Account를 active account로 설정
-    ############################################
-    - name: Set active account
+    - name: Activate service account
       run: |
         gcloud auth activate-service-account --key-file=${HOME}/key.json
 
     ############################################
-    # 4) GKE 플러그인 활성화
+    # 3) GKE Auth Plugin 설치 (필수)
     ############################################
-    - name: Enable GKE Auth Plugin
+    - name: Install GKE Auth Plugin
+      run: |
+        echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" \
+        | sudo tee /etc/apt/sources.list.d/google-cloud-sdk.list
+        sudo apt-get install -y apt-transport-https ca-certificates
+        curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+        sudo apt-get update
+        sudo apt-get install -y google-cloud-sdk-gke-gcloud-auth-plugin
+
+    - name: Enable GKE Auth Plugin Env
       run: |
         echo "USE_GKE_GCLOUD_AUTH_PLUGIN=True" >> $GITHUB_ENV
 
     ############################################
-    # 5) Frontend Build
+    # 4) Build Frontend
     ############################################
     - name: Build Frontend
       run: |
@@ -62,7 +69,7 @@ jobs:
         npm run build
 
     ############################################
-    # 6) Docker Build
+    # 5) Docker Build
     ############################################
     - name: Build Docker Image
       run: |
@@ -71,31 +78,31 @@ jobs:
           ./Matcha/frontend
 
     ############################################
-    # 7) GAR Token 로그인 (단 1회!)
+    # 6) GAR 로그인 (정상 작동 보장)
     ############################################
-    - name: Login to GAR using access token
+    - name: Docker login to GAR
       run: |
         gcloud auth print-access-token | \
           docker login -u oauth2accesstoken --password-stdin https://$GAR_LOCATION-docker.pkg.dev
 
     ############################################
-    # 8) Docker Push (이제 인증 문제 없음)
+    # 7) Docker Push
     ############################################
     - name: Push Docker Image
       run: |
         docker push "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest"
 
     ############################################
-    # 9) GKE 연결
+    # 8) GKE 연결
     ############################################
     - name: Authenticate to GKE
       run: |
         gcloud container clusters get-credentials $GKE_CLUSTER \
-          --region $GKE_LOCATION \
-          --project $PROJECT_ID
+        --region $GKE_LOCATION \
+        --project $PROJECT_ID
 
     ############################################
-    # 10) GKE 배포
+    # 9) GKE 배포
     ############################################
     - name: Deploy to GKE Autopilot
       run: |
