@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: matcha-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: matcha-frontend
+  template:
+    metadata:
+      labels:
+        app: matcha-frontend
+    spec:
+      containers:
+      - name: matcha-frontend
+        image: asia-northeast3-docker.pkg.dev/YOUR_PROJECT_ID/matcha-repo/matcha-frontend:latest
+        ports:
+        - containerPort: 80
