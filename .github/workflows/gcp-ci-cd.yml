@@ -30,14 +30,14 @@ jobs:
         project_id: ${{ secrets.GCP_PROJECT_ID }}
 
     # -------------------------------------------
-    # Step 2 — GAR 인증
+    # Step 2 — GAR 인증.
     # -------------------------------------------
     - name: Configure Docker for Artifact Registry
       run: |
         gcloud auth configure-docker $GAR_LOCATION-docker.pkg.dev --quiet
 
     #  서비스 계정 활성화
-    
+
     - name: Authenticate with service account
       run: |
         echo "${{ secrets.GCP_SA_KEY }}" > ${HOME}/key.json
