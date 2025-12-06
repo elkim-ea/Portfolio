@@ -71,7 +71,14 @@ jobs:
           ./Matcha/frontend
 
     ############################################
-    # 7) Docker Push.
+    # 7-1) Re-login Docker (Fix push auth issue)
+    ############################################
+    - name: Re-login Docker to GAR
+      run: |
+        gcloud auth configure-docker $GAR_LOCATION-docker.pkg.dev --quiet
+
+    ############################################
+    # 7) Docker Push
     ############################################
     - name: Push Docker Image
       run: |
