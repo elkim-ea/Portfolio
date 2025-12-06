@@ -34,7 +34,7 @@ jobs:
     # -------------------------------------------
     - name: Configure Docker for Artifact Registry
       run: |
-        gcloud auth configure-docker $GAR_LOCATION-docker.pkg.dev
+        gcloud auth configure-docker $GAR_LOCATION-docker.pkg.dev --quiet
 
     # -------------------------------------------
     # Step 3 — Backend JAR Build (Docker Build 이전!)
