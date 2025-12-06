@@ -67,6 +67,11 @@ jobs:
           -t "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest" \
           ./Matcha/frontend
 
+    - name: Force re-auth for GAR
+      run: |
+        gcloud auth print-access-token | \
+          docker login -u oauth2accesstoken --password-stdin https://$GAR_LOCATION-docker.pkg.dev
+
     ############################################
     # 6) Docker GAR 재인증 (중요!!)
     ############################################
