@@ -86,3 +86,10 @@ jobs:
       run: |
         kubectl apply -f k8s/backend-deployment.yaml
         kubectl apply -f k8s/backend-service.yaml
+
+    # -------------------------------------------
+    # Step 8 — JSON 유효성 검사
+    # -------------------------------------------
+    - name: Validate JSON structure
+      run: |
+        echo "${{ secrets.GCP_SA_KEY }}" | jq .
