@@ -11,7 +11,6 @@ env:
   IMAGE_NAME: matcha-frontend
   GKE_CLUSTER: ${{ secrets.GKE_CLUSTER }}
   GKE_LOCATION: ${{ secrets.GKE_LOCATION }}
-  USE_GKE_GCLOUD_AUTH_PLUGIN: "true"
 
 jobs:
   build-and-deploy:
@@ -21,40 +20,25 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    #####################################
-    # Step 1 — Base64 -> JSON 디코딩
-    #####################################
+    # 1) Base64 디코딩 → JSON 변환
     - name: Decode SA key
       run: |
         echo "${{ secrets.GCP_SA_KEY }}" | base64 --decode > ${HOME}/key.json
 
-    #####################################
-    # Step 2 — gcloud 설치 (이 단계가 플러그인을 자동 설치함)
-    #####################################
-    - name: Set up gcloud CLI
+    # 2) gcloud + GKE 인증 자동화 (핵심)
+    - name: Set up gcloud
       uses: google-github-actions/setup-gcloud@v1
       with:
         service_account_key: ${{ secrets.GCP_SA_KEY }}
         project_id: ${{ secrets.GCP_PROJECT_ID }}
         export_default_credentials: true
 
-    #####################################
-    # Step 3 — 서비스 계정 활성화
-    #####################################
-    - name: Activate Service Account
-      run: |
-        gcloud auth activate-service-account --key-file=${HOME}/key.json
-
-    #####################################
-    # Step 4 — Docker 인증
-    #####################################
+    # 3) GAR 인증
     - name: Configure Docker for Artifact Registry
       run: |
         gcloud auth configure-docker $GAR_LOCATION-docker.pkg.dev --quiet
 
-    #####################################
-    # Step 5 — Build Frontend
-    #####################################
+    # 4) Frontend Build
     - name: Build Frontend
       run: |
         cd Matcha/frontend
@@ -62,32 +46,25 @@ jobs:
         npm rebuild esbuild
         npm run build
 
-    #####################################
-    # Step 6 — Docker Build
-    #####################################
+    # 5) Docker Build
     - name: Build Docker Image
       run: |
         docker build -f ./Matcha/frontend/Dockerfile \
           -t "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest" \
           ./Matcha/frontend
 
-    #####################################
-    # Step 7 — Docker Push
-    #####################################
+    # 6) Docker Push
     - name: Push Docker Image
       run: |
         docker push "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest"
 
-    #####################################
-    # Step 8 — 클러스터 연결
-    #####################################
+    # 7) GKE 연결
     - name: Authenticate to GKE
       run: |
-        gcloud container clusters get-credentials $GKE_CLUSTER --region $GKE_LOCATION --project $PROJECT_ID
+        gcloud container clusters get-credentials $GKE_CLUSTER \
+        --region $GKE_LOCATION --project $PROJECT_ID
 
-    #####################################
-    # Step 9 — GKE 배포
-    #####################################
+    # 8) GKE 배포
     - name: Deploy to GKE Autopilot
       run: |
         kubectl apply -f k8s/frontend-deployment.yaml
