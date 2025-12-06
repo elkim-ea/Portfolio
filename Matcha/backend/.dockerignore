@@ -1,0 +1,7 @@
+build/
+.gradle/
+.git/
+src/
+uploads/
+**/*.md
+*.iml
