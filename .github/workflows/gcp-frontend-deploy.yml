@@ -43,14 +43,19 @@ jobs:
         gcloud auth activate-service-account --key-file=${HOME}/key.json
 
     ############################################
-    # 3) GKE Auth Plugin 설치 (필수)
+    # 3) GKE Auth Plugin 설치 (Ubuntu 24.04 최신 방식)
     ############################################
-    - name: Install GKE Auth Plugin
+    - name: Install GKE Auth Plugin (Ubuntu 24.04)
       run: |
-        echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" \
-        | sudo tee /etc/apt/sources.list.d/google-cloud-sdk.list
-        sudo apt-get install -y apt-transport-https ca-certificates
-        curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+        sudo mkdir -p /usr/share/keyrings
+
+        curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg \
+          | gpg --dearmor \
+          | sudo tee /usr/share/keyrings/google-cloud.gpg > /dev/null
+
+        echo "deb [signed-by=/usr/share/keyrings/google-cloud.gpg] https://packages.cloud.google.com/apt cloud-sdk main" \
+          | sudo tee /etc/apt/sources.list.d/google-cloud-sdk.list
+
         sudo apt-get update
         sudo apt-get install -y google-cloud-sdk-gke-gcloud-auth-plugin
 
