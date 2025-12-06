@@ -37,7 +37,7 @@ jobs:
         gcloud auth configure-docker $GAR_LOCATION-docker.pkg.dev --quiet
 
     # -------------------------------------------
-    # Step 3 — Backend JAR Build (Docker Build 이전!).
+    # Step 3 — Backend JAR Build (Docker Build 이전!)..
     # -------------------------------------------
     - name: Build Backend JAR
       run: |
