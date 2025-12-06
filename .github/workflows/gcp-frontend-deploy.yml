@@ -94,3 +94,11 @@ jobs:
       run: |
         kubectl apply -f k8s/frontend-deployment.yaml
         kubectl apply -f k8s/frontend-service.yaml
+
+    #####################################
+    # (NEW) 디버그용
+    #####################################
+    - name: Debug directory
+      run: |
+        pwd
+        ls -R
