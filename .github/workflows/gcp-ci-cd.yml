@@ -44,6 +44,11 @@ jobs:
         cd Matcha/backend
         chmod +x ./gradlew
         ./gradlew clean build -x test
+        
+    - name: Debug Directory Structure
+      run: |
+        pwd
+        ls -R
 
     # -------------------------------------------
     # Step 4 — Docker 이미지 Build
