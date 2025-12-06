@@ -86,6 +86,10 @@ jobs:
       run: |
         docker push "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest"
 
+    - name: Set active account
+      run: |
+        gcloud config set account "$(jq -r '.client_email' ${HOME}/key.json)"
+        
     ############################################
     # 8) GKE 연결
     ############################################
