@@ -42,7 +42,7 @@ jobs:
     ############################################
     - name: Set active account
       run: |
-        gcloud config set account "$(jq -r '.client_email' ${HOME}/key.json)"
+        gcloud auth activate-service-account --key-file=${HOME}/key.json
 
     ############################################
     # 4) GKE 플러그인 활성화
