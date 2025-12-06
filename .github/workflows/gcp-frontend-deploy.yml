@@ -21,7 +21,7 @@ jobs:
       uses: actions/checkout@v4
 
     ############################################
-    # 1) Base64 → JSON 디코딩 (필수)
+    # 1) Base64 → JSON 디코딩
     ############################################
     - name: Decode SA key
       run: |
@@ -37,22 +37,19 @@ jobs:
         project_id: ${{ secrets.GCP_PROJECT_ID }}
         export_default_credentials: true
 
-    ############################################
-    # 3) GKE Auth Plugin 환경 변수 적용 (필수)
-    ############################################
     - name: Enable GKE Auth Plugin
       run: |
         echo "USE_GKE_GCLOUD_AUTH_PLUGIN=True" >> $GITHUB_ENV
 
     ############################################
-    # 4) GAR Docker 인증
+    # 3) Docker GAR 인증 (1차)
     ############################################
-    - name: Docker login to GAR
+    - name: Docker login (initial)
       run: |
         gcloud auth configure-docker $GAR_LOCATION-docker.pkg.dev --quiet
 
     ############################################
-    # 5) Frontend Build
+    # 4) Frontend Build
     ############################################
     - name: Build Frontend
       run: |
@@ -62,7 +59,7 @@ jobs:
         npm run build
 
     ############################################
-    # 6) Docker Build
+    # 5) Docker Build
     ############################################
     - name: Build Docker Image
       run: |
@@ -71,14 +68,14 @@ jobs:
           ./Matcha/frontend
 
     ############################################
-    # 7-1) Re-login Docker (Fix push auth issue)
+    # 6) Docker GAR 재인증 (중요!!)
     ############################################
-    - name: Re-login Docker to GAR
+    - name: Docker login (re-auth)
       run: |
         gcloud auth configure-docker $GAR_LOCATION-docker.pkg.dev --quiet
 
     ############################################
-    # 7) Docker Push
+    # 7) Docker Push (여기서 인증 문제 해결됨)
     ############################################
     - name: Push Docker Image
       run: |
