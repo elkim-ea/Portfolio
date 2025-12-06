@@ -36,6 +36,13 @@ jobs:
       run: |
         gcloud auth configure-docker $GAR_LOCATION-docker.pkg.dev --quiet
 
+    #  서비스 계정 활성화
+    
+    - name: Authenticate with service account
+      run: |
+        echo "${{ secrets.GCP_SA_KEY }}" > ${HOME}/key.json
+        gcloud auth activate-service-account --key-file=${HOME}/key.json
+
     # -------------------------------------------
     # Step 3 — Backend JAR Build (Docker Build 이전!)..
     # -------------------------------------------
