@@ -21,7 +21,14 @@ jobs:
       uses: actions/checkout@v4
 
     # -------------------------------------------
-    # Step 1 — gcloud 설치
+    # Step 1 — Base64 → JSON 디코딩 (가장 중요!!)
+    # -------------------------------------------
+    - name: Decode SA key from base64
+      run: |
+        echo "${{ secrets.GCP_SA_KEY }}" | base64 --decode > ${HOME}/key.json
+
+    # -------------------------------------------
+    # Step 2 — gcloud 설치 + 서비스 계정 활성화
     # -------------------------------------------
     - name: Set up gcloud CLI
       uses: google-github-actions/setup-gcloud@v2
@@ -29,22 +36,19 @@ jobs:
         service_account_key: ${{ secrets.GCP_SA_KEY }}
         project_id: ${{ secrets.GCP_PROJECT_ID }}
 
+    - name: Authenticate with service account
+      run: |
+        gcloud auth activate-service-account --key-file=${HOME}/key.json
+
     # -------------------------------------------
-    # Step 2 — GAR 인증....
+    # Step 3 — Docker GAR 인증
     # -------------------------------------------
     - name: Configure Docker for Artifact Registry
       run: |
         gcloud auth configure-docker $GAR_LOCATION-docker.pkg.dev --quiet
 
-    #  서비스 계정 활성화
-
-    - name: Authenticate with service account
-      run: |
-        echo "${{ secrets.GCP_SA_KEY }}" > ${HOME}/key.json
-        gcloud auth activate-service-account --key-file=${HOME}/key.json
-
     # -------------------------------------------
-    # Step 3 — Backend JAR Build (Docker Build 이전!)...
+    # Step 4 — Backend JAR Build
     # -------------------------------------------
     - name: Build Backend JAR
       run: |
@@ -52,44 +56,33 @@ jobs:
         chmod +x ./gradlew
         ./gradlew clean build -x test
 
-    - name: Debug Directory Structure
-      run: |
-        pwd
-        ls -R
-
     # -------------------------------------------
-    # Step 4 — Docker 이미지 Build
+    # Step 5 — Docker Build
     # -------------------------------------------
     - name: Build Docker Image
       run: |
-        docker build -f ./Matcha/backend/Dockerfile -t "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest" ./Matcha/backend
-
+        docker build -f ./Matcha/backend/Dockerfile \
+        -t "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest" \
+        ./Matcha/backend
 
     # -------------------------------------------
-    # Step 5 — Docker Push.
+    # Step 6 — Docker Push
     # -------------------------------------------
     - name: Push Docker Image
       run: |
-        docker push $GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest
+        docker push "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest"
 
     # -------------------------------------------
-    # Step 6 — GKE 연결
+    # Step 7 — GKE 연결
     # -------------------------------------------
     - name: Authenticate to GKE
       run: |
         gcloud container clusters get-credentials $GKE_CLUSTER --region $GKE_LOCATION --project $PROJECT_ID
 
     # -------------------------------------------
-    # Step 7 — GKE 배포
+    # Step 8 — GKE 배포
     # -------------------------------------------
     - name: Deploy to GKE Autopilot
       run: |
         kubectl apply -f k8s/backend-deployment.yaml
         kubectl apply -f k8s/backend-service.yaml
-
-    # -------------------------------------------
-    # Step 8 — JSON 유효성 검사
-    # -------------------------------------------
-    - name: Validate JSON structure
-      run: |
-        echo "${{ secrets.GCP_SA_KEY }}" | jq .
