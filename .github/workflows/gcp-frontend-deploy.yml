@@ -71,7 +71,7 @@ jobs:
           ./Matcha/frontend
 
     ############################################
-    # 7) Docker Push
+    # 7) Docker Push.
     ############################################
     - name: Push Docker Image
       run: |
