@@ -1,11 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: matcha-backend-svc
+  name: matcha-backend-service
 spec:
   type: LoadBalancer
   selector:
     app: matcha-backend
   ports:
-    - port: 80
+    - protocol: TCP
+      port: 80
       targetPort: 8080
