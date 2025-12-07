@@ -72,7 +72,8 @@ public class SecurityConfig {
         configuration.setAllowCredentials(true);
 
         configuration.setAllowedOrigins(List.of(
-                "http://matcha-lb-114707206-228654e6659f.kr.lb.naverncp.com",   // ✔ LB 도메인
+                "http://matcha-lb-114707206-228654e6659f.kr.lb.naverncp.com",   // NCP LB 도메인
+                "http://34.64.88.163",         // GCP GKE LB 도메인
                 "http://localhost:5173",
                 "http://127.0.0.1:5173",
                 "http://localhost:3000",
