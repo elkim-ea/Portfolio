@@ -43,7 +43,7 @@ jobs:
         gcloud auth activate-service-account --key-file=${HOME}/key.json
 
     ############################################
-    # 3) GKE Auth Plugin 설치 (Ubuntu 24.04 최신 방식)
+    # 3) GKE Auth Plugin (Ubuntu 24.04)
     ############################################
     - name: Install GKE Auth Plugin (Ubuntu 24.04)
       run: |
@@ -64,11 +64,13 @@ jobs:
         echo "USE_GKE_GCLOUD_AUTH_PLUGIN=True" >> $GITHUB_ENV
 
     ############################################
-    # 4) Build Frontend
+    # 4) Build Frontend (+ .env 생성)
     ############################################
     - name: Build Frontend
       run: |
         cd Matcha/frontend
+        echo "VITE_API_BASE_URL=http://34.64.216.222" > .env
+        echo "VITE_API_BASE_URL=http://34.64.216.222/uploads" > .env
         npm ci
         npm rebuild esbuild
         npm run build
@@ -83,7 +85,7 @@ jobs:
           ./Matcha/frontend
 
     ############################################
-    # 6) GAR 로그인 (정상 작동 보장)
+    # 6) GAR 로그인
     ############################################
     - name: Docker login to GAR
       run: |
@@ -103,11 +105,11 @@ jobs:
     - name: Authenticate to GKE
       run: |
         gcloud container clusters get-credentials $GKE_CLUSTER \
-        --region $GKE_LOCATION \
-        --project $PROJECT_ID
+          --region $GKE_LOCATION \
+          --project $PROJECT_ID
 
     ############################################
-    # 9) GKE 배포.
+    # 9) GKE 배포
     ############################################
     - name: Deploy to GKE Autopilot
       run: |
