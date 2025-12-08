@@ -25,27 +25,31 @@
 # CMD ["nginx", "-g", "daemon off;"]
 
 ############################################
-### --- 1) ARG는 FROM 바로 위에 두기 ---
+### --- 1) 최상단 ARG (필수) ---
 ARG VITE_API_BASE_URL
 ARG VITE_IMG_BASE_URL
 
-### --- 2) builder 단계 ---
+### --- 2) builder 단계 시작 ---
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-# ARG를 받아서 ENV로 변환
-ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
-ENV VITE_IMG_BASE_URL=$VITE_IMG_BASE_URL
+# 여기서 다시 ARG 선언!
+ARG VITE_API_BASE_URL
+ARG VITE_IMG_BASE_URL
+
+# 이제 ENV로 변환
+ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
+ENV VITE_IMG_BASE_URL=${VITE_IMG_BASE_URL}
 
 COPY package.json .
 RUN npm install
 RUN npm rebuild esbuild
 COPY . .
 
-# Vite는 빌드 시 import.meta.env.* 을 ENV에서 읽음
+# Vite는 빌드 시점에 ENV 값을 읽음!
 RUN npm run build
 
-### --- 3) nginx 단계 ---
+### --- 3) nginx ---
 FROM nginx:stable-alpine
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=builder /app/dist /usr/share/nginx/html
