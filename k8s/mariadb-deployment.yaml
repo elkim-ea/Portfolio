@@ -18,6 +18,8 @@ spec:
           env:
             - name: MARIADB_ROOT_PASSWORD
               value: "1234"
+            - name: MARIADB_ROOT_HOST
+              value: "%"
             - name: MARIADB_DATABASE
               value: matcha_world_dev_db
             - name: MARIADB_USER
