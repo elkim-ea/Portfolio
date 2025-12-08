@@ -14,6 +14,7 @@ public class WebConfig implements WebMvcConfigurer {
         // SecurityConfig의 CORS 설정만으로는 OPTIONS 응답 헤더가 누락되어 403 발생
         registry.addMapping("/**")
                 .allowedOrigins(
+                        "http://34.64.88.163",      // 🔥 GKE Frontend LB Origin 추가
                         "http://localhost:5173",
                         "http://127.0.0.1:5173",
                         "http://localhost:3000",
