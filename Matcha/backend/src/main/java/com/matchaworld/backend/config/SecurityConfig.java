@@ -39,6 +39,7 @@ public class SecurityConfig {
             "/api/weather/**",
             "/api/ai/**",
             "/api/auth/**",
+            "/auth/**",      // ⭐ 이거 추가!!!
             "/uploads/**",
             "/api/record/**",
             "/actuator/health",
