@@ -6,7 +6,7 @@ ARG VITE_IMG_BASE_URL
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-# ARG 재선언 (필수)
+# ARG 재선언
 ARG VITE_API_BASE_URL
 ARG VITE_IMG_BASE_URL
 
@@ -16,6 +16,8 @@ ENV VITE_IMG_BASE_URL=${VITE_IMG_BASE_URL}
 
 # 먼저 package.json 복사 후 install
 COPY package.json package-lock.json* ./
+COPY .env.production .env.production
+
 RUN npm install
 
 # 전체 소스 복사
