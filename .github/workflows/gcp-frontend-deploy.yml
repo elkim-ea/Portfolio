@@ -69,8 +69,8 @@ jobs:
     - name: Build Frontend
       run: |
         cd Matcha/frontend
-        echo "VITE_API_BASE_URL=http://34.64.80.19:8080" > .env
-        echo "VITE_API_BASE_URL=http://34.64.80.19/uploads" > .env
+        echo "VITE_API_BASE_URL=http://34.64.80.19/api" > .env
+        echo "VITE_IMG_BASE_URL=http://34.64.80.19/uploads" >> .env
         npm ci
         npm rebuild esbuild
         npm run build
@@ -81,10 +81,11 @@ jobs:
     - name: Build Docker Image
       run: |
         docker build -f ./Matcha/frontend/Dockerfile \
-        --build-arg VITE_API_BASE_URL="http://34.64.80.19" \
-        --build-arg VITE_IMG_BASE_URL="http://34.64.80.19/uploads" \
-        -t "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest" \
-        ./Matcha/frontend
+          --build-arg VITE_API_BASE_URL="http://34.64.80.19/api" \
+          --build-arg VITE_IMG_BASE_URL="http://34.64.80.19/uploads" \
+          -t "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest" \
+          ./Matcha/frontend
+
 
     ############################################
     # 6) GAR 로그인

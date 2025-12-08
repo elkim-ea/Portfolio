@@ -39,7 +39,9 @@ import lombok.extern.slf4j.Slf4j;
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://localhost:3000",
-    "http://127.0.0.1:3000"
+    "http://127.0.0.1:3000",
+    "http://34.64.88.163",
+    "http://34.64.80.19"
 })
 public class AuthController {
     
