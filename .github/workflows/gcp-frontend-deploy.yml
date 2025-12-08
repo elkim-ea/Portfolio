@@ -69,8 +69,8 @@ jobs:
     - name: Build Frontend
       run: |
         cd Matcha/frontend
-        echo "VITE_API_BASE_URL=http://34.64.216.222" > .env
-        echo "VITE_API_BASE_URL=http://34.64.216.222/uploads" > .env
+        echo "VITE_API_BASE_URL=http://34.64.80.19" > .env
+        echo "VITE_API_BASE_URL=http://34.64.80.19/uploads" > .env
         npm ci
         npm rebuild esbuild
         npm run build
