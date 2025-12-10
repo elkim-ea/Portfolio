@@ -65,15 +65,15 @@ jobs:
 
 
     ############################################
-    # 4) buildx 비활성화 (중요!)
+    # 4) buildx 완전 비활성화 (필수!)
     ############################################
-    - name: Disable buildx hints
-      run: echo "DOCKER_CLI_HINTS=off" >> $GITHUB_ENV
-
-    - name: Disable buildx
+    - name: Disable buildx completely
       run: |
+        docker buildx stop default || true
         docker buildx rm default || true
-
+        docker builder prune -f || true
+        echo '{"experimental": false}' | sudo tee /etc/docker/daemon.json
+        sudo systemctl restart docker || true
 
     ############################################
     # 5) Docker Build
