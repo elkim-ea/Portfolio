@@ -32,7 +32,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/auth/login")
 @RequiredArgsConstructor
 @Slf4j
 // @CrossOrigin(origins = {

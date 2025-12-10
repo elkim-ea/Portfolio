@@ -288,7 +288,8 @@ export const authApi = {
     // 로그인
     login: async (data: LoginRequest): Promise<LoginResponse> => {
         try {
-            const response = await apiClient.post<LoginResponse>('/auth/login', data);
+            // const response = await apiClient.post<LoginResponse>('/auth/login', data);
+            const response = await apiClient.post<LoginResponse>('/api/auth/login', data);
             return response.data;
         } catch (error: any) {
             if (axios.isAxiosError(error) && error.response) {
