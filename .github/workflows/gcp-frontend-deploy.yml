@@ -118,3 +118,6 @@ jobs:
       run: |
         kubectl apply -f k8s/frontend-deployment.yaml
         kubectl apply -f k8s/frontend-service.yaml
+
+    - name: Remove old docker cache
+      run: docker builder prune -a -f || true
