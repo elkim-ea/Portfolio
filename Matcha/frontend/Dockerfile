@@ -2,6 +2,11 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
+ARG VITE_API_BASE_URL
+ARG VITE_IMG_BASE_URL
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+ENV VITE_IMG_BASE_URL=$VITE_IMG_BASE_URL
+
 # 패키지 설치
 COPY package.json package-lock.json* ./ 
 
