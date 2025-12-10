@@ -70,8 +70,12 @@ jobs:
     - name: Disable buildx hints
       run: echo "DOCKER_CLI_HINTS=off" >> $GITHUB_ENV
 
-    - name: Remove buildx builder
-      run: docker buildx rm default || true
+    - name: Force Classic Docker Builder
+      run: |
+        docker buildx rm default || true
+        docker buildx create --driver docker --use classic
+        docker buildx inspect --bootstrap
+        docker buildx ls
 
     ############################################
     # 5) Docker Build
