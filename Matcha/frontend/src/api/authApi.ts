@@ -289,7 +289,7 @@ export const authApi = {
     login: async (data: LoginRequest): Promise<LoginResponse> => {
         try {
             // const response = await apiClient.post<LoginResponse>('/auth/login', data);
-            const response = await apiClient.post<LoginResponse>('/api/auth/login', data);
+            const response = await apiClient.post<LoginResponse>('/auth/login', data);
             return response.data;
         } catch (error: any) {
             if (axios.isAxiosError(error) && error.response) {
