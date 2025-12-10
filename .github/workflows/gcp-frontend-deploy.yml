@@ -67,6 +67,9 @@ jobs:
     ############################################
     # 4) buildx 비활성화 (중요!)
     ############################################
+    - name: Disable buildx hints
+      run: echo "DOCKER_CLI_HINTS=off" >> $GITHUB_ENV
+      
     - name: Disable buildx
       run: |
         docker buildx rm default || true
