@@ -9,6 +9,7 @@ env:
   GAR_LOCATION: asia-northeast3
   GAR_REPO: matcha-repo
   IMAGE_NAME: matcha-frontend
+  IMAGE_TAG: ${{ github.sha }} 
   GKE_CLUSTER: ${{ secrets.GKE_CLUSTER }}
   GKE_LOCATION: ${{ secrets.GKE_LOCATION }}
 
