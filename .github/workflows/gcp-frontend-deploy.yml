@@ -2,7 +2,7 @@ name: Deploy Frontend to GKE Autopilot
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
@@ -45,7 +45,7 @@ jobs:
     ############################################
     # 3) GKE Auth Plugin (Ubuntu 24.04)
     ############################################
-    - name: Install GKE Auth Plugin (Ubuntu 24.04)
+    - name: Install GKE Auth Plugin
       run: |
         sudo mkdir -p /usr/share/keyrings
 
@@ -65,6 +65,14 @@ jobs:
 
 
     ############################################
+    # 4) buildx 비활성화 (중요!)
+    ############################################
+    - name: Disable buildx
+      run: |
+        docker buildx rm default || true
+
+
+    ############################################
     # 5) Docker Build
     ############################################
     - name: Build Docker image
@@ -76,6 +84,7 @@ jobs:
           -f frontend/Dockerfile \
           frontend
 
+
     ############################################
     # 6) GAR 로그인
     ############################################
@@ -84,12 +93,14 @@ jobs:
         gcloud auth print-access-token | \
           docker login -u oauth2accesstoken --password-stdin https://$GAR_LOCATION-docker.pkg.dev
 
+
     ############################################
     # 7) Docker Push
     ############################################
     - name: Push Docker Image
       run: |
         docker push "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest"
+
 
     ############################################
     # 8) GKE 연결
