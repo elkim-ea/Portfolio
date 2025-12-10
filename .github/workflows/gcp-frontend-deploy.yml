@@ -82,12 +82,13 @@ jobs:
     ############################################
     - name: Build Docker image
       run: |
+        cd Matcha/frontend
         docker build \
-        --build-arg VITE_API_BASE_URL=${{ secrets.API_BASE_URL }} \
-        --build-arg VITE_IMG_BASE_URL=${{ secrets.IMG_BASE_URL }} \
-        -t $GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest \
-        -f Matcha/frontend/Dockerfile \
-        Matcha/frontend
+          --progress=plain \
+          --build-arg VITE_API_BASE_URL=${{ secrets.API_BASE_URL }} \
+          --build-arg VITE_IMG_BASE_URL=${{ secrets.IMG_BASE_URL }} \
+          -t $GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest \
+          -f Dockerfile .
 
     ############################################
     # 6) GAR 로그인
