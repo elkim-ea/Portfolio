@@ -63,6 +63,11 @@ jobs:
       run: |
         echo "USE_GKE_GCLOUD_AUTH_PLUGIN=True" >> $GITHUB_ENV
 
+    - name: Build Frontend
+      run: |
+        cd Matcha/frontend
+        npm ci
+        npm run build --mode production
 
     ############################################
     # 4) buildx + BuildKit 완전 비활성화
