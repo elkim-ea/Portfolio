@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:mariadb://matcha-db-service:3306/matcha_world_prod_db
+    url: jdbc:mariadb://matcha-db:3306/matcha_world_prod_db
     username: root
     password: 1234
     driver-class-name: org.mariadb.jdbc.Driver
