@@ -65,10 +65,14 @@ jobs:
 
 
     ############################################
-    # 4) buildx 완전 비활성화 (필수!)
+    # 4) buildx + BuildKit 완전 비활성화
     ############################################
-    - name: Disable buildx hints
-      run: echo "DOCKER_CLI_HINTS=off" >> $GITHUB_ENV
+    - name: Disable Docker buildx completely
+      run: |
+        echo "DOCKER_CLI_HINTS=off" >> $GITHUB_ENV
+        echo "BUILDKIT_PROGRESS=plain" >> $GITHUB_ENV
+        echo "DOCKER_BUILDKIT=0" >> $GITHUB_ENV
+
 
     ############################################
     # 5) Docker Build
