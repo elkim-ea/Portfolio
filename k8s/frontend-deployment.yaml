@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: matcha-frontend
-        image: asia-northeast3-docker.pkg.dev/matcha-480312/matcha-repo/matcha-frontend:${IMAGE_TAG}
+        image: asia-northeast3-docker.pkg.dev/matcha-480312/matcha-repo/matcha-frontend:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 80
