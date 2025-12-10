@@ -3,8 +3,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # 패키지 설치
-COPY package.json package-lock.json* ./
-COPY .env.production .env.production   
+COPY package.json package-lock.json* ./ 
 
 RUN npm install
 
