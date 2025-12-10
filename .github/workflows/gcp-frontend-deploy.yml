@@ -67,7 +67,7 @@ jobs:
       run: |
         cd Matcha/frontend
         npm ci
-        npm run build --mode production
+        npm run build
 
     ############################################
     # 4) buildx + BuildKit 완전 비활성화
