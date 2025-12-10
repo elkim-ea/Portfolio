@@ -93,7 +93,7 @@ jobs:
 
     - name: Update image to new SHA
       run: |
-        kubectl set image deployment/matcha-frontend-deployment \
+        kubectl set image deployment/frontend-deployment \
           matcha-frontend=asia-northeast3-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:${IMAGE_TAG}
 
     - name: Clean docker cache
