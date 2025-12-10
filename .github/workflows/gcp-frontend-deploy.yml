@@ -67,21 +67,23 @@ jobs:
     ############################################
     # 4) buildx 완전 비활성화 (필수!)
     ############################################
-    - name: Disable buildx completely
-      run: |
-        docker buildx stop default || true
-        docker buildx rm default || true
-        docker builder prune -f || true
-        echo '{"experimental": false}' | sudo tee /etc/docker/daemon.json
-        sudo systemctl restart docker || true
+    - name: Disable buildx hints
+      run: echo "DOCKER_CLI_HINTS=off" >> $GITHUB_ENV
+
+    - name: Remove buildx builder
+      run: docker buildx rm default || true
 
     ############################################
     # 5) Docker Build
     ############################################
     - name: Build Docker image
       run: |
-        docker build --build-arg VITE_API_BASE_URL=${{ secrets.API_BASE_URL }} --build-arg VITE_IMG_BASE_URL=${{ secrets.IMG_BASE_URL }} -t $GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest -f Matcha/frontend/Dockerfile Matcha/frontend
-
+        docker build \
+        --build-arg VITE_API_BASE_URL=${{ secrets.API_BASE_URL }} \
+        --build-arg VITE_IMG_BASE_URL=${{ secrets.IMG_BASE_URL }} \
+        -t $GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest \
+        -f Matcha/frontend/Dockerfile \
+        Matcha/frontend
 
     ############################################
     # 6) GAR 로그인
