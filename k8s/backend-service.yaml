@@ -11,5 +11,5 @@ spec:
     app: matcha-backend
   ports:
     - protocol: TCP
-      port: 80        # external port 그대로 80 사용
-      targetPort: 8080  # Pod 내부 포트
+      port: 80
+      targetPort: 8080
