@@ -32,7 +32,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("/api/auth/login")
+@RequestMapping("/auth")
 @RequiredArgsConstructor
 @Slf4j
 // @CrossOrigin(origins = {
@@ -47,7 +47,7 @@ public class AuthController {
     
     private final VerificationService verificationService;
     private final UserService userService;
-    private final JwtService JwtService;
+    private final JwtService jwtService;
 
     private final TermsService termsService;
     
@@ -234,7 +234,7 @@ public class AuthController {
             User user = userService.login(request.getEmail(), request.getPassword());
             
             // JWT 토큰 생성
-            String token = JwtService.generateAccessToken(
+            String token = jwtService.generateAccessToken(
                 user.getId(),
                 user.getEmail(),
                 user.getRole().name()
