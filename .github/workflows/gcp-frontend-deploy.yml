@@ -22,29 +22,28 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    # 👍 수정된 인증 단계
-    - name: Google Auth
+    # 1) 🔐 GCP 인증 (정답)
+    - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v2
       with:
         credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-    - name: Set up gcloud
+    # 2) gcloud 설치
+    - name: Install gcloud SDK
       uses: google-github-actions/setup-gcloud@v2
-      with:
-        project_id: ${{ secrets.GCP_PROJECT_ID }}
 
+    # 3) GKE Auth Plugin 사용 설정
+    - name: Enable GKE Auth Plugin Env
+      run: echo "USE_GKE_GCLOUD_AUTH_PLUGIN=True" >> $GITHUB_ENV
+
+    # 4) 프론트 빌드
     - name: Build Frontend
       run: |
         cd Matcha/frontend
         npm ci
         npm run build
 
-    - name: Disable Docker buildx completely
-      run: |
-        echo "DOCKER_CLI_HINTS=off" >> $GITHUB_ENV
-        echo "BUILDKIT_PROGRESS=plain" >> $GITHUB_ENV
-        echo "DOCKER_BUILDKIT=0" >> $GITHUB_ENV
-
+    # 5) Docker Build (환경변수 전달)
     - name: Docker Build
       run: |
         docker build -f Matcha/frontend/Dockerfile \
@@ -54,29 +53,31 @@ jobs:
         -t "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest" \
         Matcha/frontend
 
+    # 6) GAR 로그인
     - name: Docker login to GAR
       run: |
         gcloud auth print-access-token | \
           docker login -u oauth2accesstoken --password-stdin https://$GAR_LOCATION-docker.pkg.dev
 
+    # 7) 이미지 Push
     - name: Push Docker Image
       run: |
         docker push "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:${IMAGE_TAG}"
         docker push "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest"
 
+    # 8) GKE 연결
     - name: Authenticate to GKE
       run: |
         gcloud container clusters get-credentials $GKE_CLUSTER \
           --region $GKE_LOCATION \
           --project $PROJECT_ID
 
+    # 9) K8s 적용
     - name: Apply K8s manifest
       run: |
         kubectl apply -f k8s/frontend-deployment.yaml
         kubectl apply -f k8s/frontend-service.yaml
 
+    # 10) 최신 이미지로 롤아웃
     - name: Restart frontend deployment
       run: kubectl rollout restart deployment/matcha-frontend
-
-    - name: Clean docker cache
-      run: docker builder prune -a -f || true

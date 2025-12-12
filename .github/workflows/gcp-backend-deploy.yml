@@ -17,51 +17,78 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
+    # -----------------------------
+    # 1) Checkout
+    # -----------------------------
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    # 👍 수정된 인증 단계
-    - name: Google Auth
+    # -----------------------------
+    # 2) Authenticate to Google Cloud (정답)
+    # -----------------------------
+    - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v2
       with:
         credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-    - name: Set up gcloud
+    # -----------------------------
+    # 3) Install gcloud SDK
+    # -----------------------------
+    - name: Install gcloud SDK
       uses: google-github-actions/setup-gcloud@v2
-      with:
-        project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-    - name: Configure Docker for Artifact Registry
-      run: |
-        gcloud auth configure-docker $GAR_LOCATION-docker.pkg.dev --quiet
+    # -----------------------------
+    # 4) Enable GKE Auth Plugin
+    # -----------------------------
+    - name: Enable GKE Auth Plugin Env
+      run: echo "USE_GKE_GCLOUD_AUTH_PLUGIN=True" >> $GITHUB_ENV
 
+    # -----------------------------
+    # 5) Build Backend JAR
+    # -----------------------------
     - name: Build Backend JAR
       run: |
         cd Matcha/backend
         chmod +x ./gradlew
         ./gradlew clean build -x test
 
+    # -----------------------------
+    # 6) Docker Build
+    # -----------------------------
     - name: Build Docker Image
       run: |
         docker build -f ./Matcha/backend/Dockerfile \
-          -t "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest" \
-          ./Matcha/backend
+        -t "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest" \
+        ./Matcha/backend
 
-    - name: Install GKE Auth Plugin
+    # -----------------------------
+    # 7) Login to Artifact Registry
+    # -----------------------------
+    - name: Docker login to GAR
       run: |
-        sudo apt-get update
-        sudo apt-get install -y google-cloud-sdk-gke-gcloud-auth-plugin
+        gcloud auth print-access-token | \
+          docker login -u oauth2accesstoken --password-stdin https://$GAR_LOCATION-docker.pkg.dev
 
+    # -----------------------------
+    # 8) Push Docker Image
+    # -----------------------------
     - name: Push Docker Image
       run: |
         docker push "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest"
 
+    # -----------------------------
+    # 9) Connect to GKE
+    # -----------------------------
     - name: Authenticate to GKE
       run: |
         gcloud container clusters get-credentials $GKE_CLUSTER \
           --region $GKE_LOCATION \
           --project $PROJECT_ID
 
+    # -----------------------------
+    # 10) Deploy to GKE Autopilot
+    # -----------------------------
     - name: Deploy to GKE Autopilot
       run: |
         kubectl apply -f k8s/backend-deployment.yaml
