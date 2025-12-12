@@ -35,7 +35,7 @@ jobs:
         curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-487.0.0-linux-x86_64.tar.gz
         tar -xf google-cloud-cli-487.0.0-linux-x86_64.tar.gz
         ./google-cloud-sdk/install.sh --quiet
-        echo "$PWD/google-cloud-sdk/bin" >> $GITHUB_PATH
+        echo "$(pwd)/google-cloud-sdk/bin" >> $GITHUB_PATH
 
     # 4) Plugin 환경변수
     - name: Enable GKE Auth Plugin Env
@@ -82,8 +82,8 @@ jobs:
     # 10) Kubernetes apply
     - name: Apply K8s manifest
       run: |
-        kubectl apply -f k8s/frontend-deployment.yaml --record
-        kubectl apply -f k8s/frontend-service.yaml --record
+        kubectl apply -f k8s/frontend-deployment.yaml
+        kubectl apply -f k8s/frontend-service.yaml
 
     # 11) 롤링 업데이트
     - name: Restart frontend deployment
