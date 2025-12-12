@@ -40,13 +40,12 @@ jobs:
     # ⭐ 5) gke-gcloud-auth-plugin 수동 설치 (gzip → tar 수정됨)
     - name: Install gke-gcloud-auth-plugin manually
       run: |
-        curl -LO https://dl.google.com/dl/cloudsdk/channels/rapid/components/google-cloud-sdk-gke-gcloud-auth-plugin-linux-x86_64.tar
+        curl -LO https://dl.google.com/dl/cloudsdk/channels/rapid/components/google-cloud-sdk-gke-gcloud-auth-plugin-linux-x86_64.tar.gz
         sudo mkdir -p /usr/google-cloud-sdk/bin
-        sudo tar -C /usr/google-cloud-sdk/bin -xvf google-cloud-sdk-gke-gcloud-auth-plugin-linux-x86_64.tar
+        sudo tar -C /usr/google-cloud-sdk/bin -xzf google-cloud-sdk-gke-gcloud-auth-plugin-linux-x86_64.tar.gz
         sudo chmod +x /usr/google-cloud-sdk/bin/gke-gcloud-auth-plugin
         echo "/usr/google-cloud-sdk/bin" >> $GITHUB_PATH
-        which gke-gcloud-auth-plugin || true
-        gke-gcloud-auth-plugin --version || true
+        which gke-gcloud-auth-plugin
 
     # 6) Frontend Build
     - name: Build Frontend
