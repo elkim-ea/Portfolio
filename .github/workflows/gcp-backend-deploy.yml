@@ -32,6 +32,22 @@ jobs:
     - name: Setup gcloud
       uses: google-github-actions/setup-gcloud@v2
 
+    # 🔥 3) GKE Auth Plugin 설치 (가장 중요)
+    - name: Install GKE Auth Plugin
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y apt-transport-https ca-certificates gnupg
+
+        # Google Cloud APT repo 등록
+        echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | \
+          sudo tee /etc/apt/sources.list.d/google-cloud-sdk.list
+
+        curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | \
+          sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
+
+        sudo apt-get update
+        sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
+
     # gke-gcloud-auth-plugin 자동 탐색 및 PATH 추가
     - name: Add GKE Auth Plugin to PATH
       run: |
@@ -56,6 +72,13 @@ jobs:
         echo "$(dirname $PLUGIN_PATH)" >> $GITHUB_PATH
 
         which gke-gcloud-auth-plugin || true
+    
+    # 4) 플러그인 경로 확인
+    - name: Verify plugin
+      run: |
+        which gke-gcloud-auth-plugin || echo "Plugin not in PATH"
+        gke-gcloud-auth-plugin --version || echo "Plugin missing"
+
 
     # 4) 플러그인 활성화
     - name: Enable GKE Auth Plugin Env
