@@ -29,13 +29,15 @@ jobs:
       with:
         credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-    # 3) Google Cloud SDK 설치 (includes gke-gcloud-auth-plugin)
-    - name: Install Google Cloud CLI manually
+    ## (중요!) gke-gcloud-auth-plugin 위치 강제 등록
+    - name: Fix PATH for gke-gcloud-auth-plugin
       run: |
-        curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-487.0.0-linux-x86_64.tar.gz
-        tar -xf google-cloud-cli-487.0.0-linux-x86_64.tar.gz
-        ./google-cloud-sdk/install.sh --quiet
-        echo "$(pwd)/google-cloud-sdk/bin" >> $GITHUB_PATH
+        echo "$GITHUB_WORKSPACE/google-cloud-sdk/bin" >> $GITHUB_PATH
+        echo "$GITHUB_WORKSPACE/google-cloud-sdk/bin" >> $GITHUB_ENV
+
+        ls -al $GITHUB_WORKSPACE/google-cloud-sdk/bin
+        which gke-gcloud-auth-plugin || echo "plugin not in PATH"
+        gke-gcloud-auth-plugin --version || true
 
     # 4) Plugin 환경변수
     - name: Enable GKE Auth Plugin Env
