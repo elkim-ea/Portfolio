@@ -40,8 +40,7 @@ jobs:
     - name: Enable GKE Auth Plugin Env
       run: |
         echo "USE_GKE_GCLOUD_AUTH_PLUGIN=True" >> $GITHUB_ENV
-        which gke-gcloud-auth-plugin
-        gke-gcloud-auth-plugin --version || true
+        
 
     # 5) GKE 연결
     - name: Authenticate to GKE
