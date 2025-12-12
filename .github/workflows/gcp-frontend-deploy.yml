@@ -23,7 +23,7 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    # 2) GCP 인증
+    # 2) Google Cloud 인증
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v2
       with:
@@ -33,16 +33,19 @@ jobs:
     - name: Install gcloud SDK
       uses: google-github-actions/setup-gcloud@v2
 
-    # 4) GKE Auth Plugin 환경변수 활성화
-    - name: Enable GKE Auth Plugin
+    # 4) GKE Auth Plugin 환경변수
+    - name: Enable GKE Auth Plugin Env
       run: echo "USE_GKE_GCLOUD_AUTH_PLUGIN=True" >> $GITHUB_ENV
 
-    # ⭐ 5) gke-gcloud-auth-plugin을 PATH에 포함시키기 (필수!!)
-    - name: Add gke-gcloud-auth-plugin to PATH
+    # ⭐ 5) gke-gcloud-auth-plugin 직접 설치 (Ubuntu 24.04 해결)
+    - name: Install gke-gcloud-auth-plugin manually
       run: |
-        echo "/usr/lib/google-cloud-sdk/bin" >> $GITHUB_PATH
-        ls -al /usr/lib/google-cloud-sdk/bin  # Debug check
-        which gke-gcloud-auth-plugin || true  # Debug output
+        curl -LO https://dl.google.com/dl/cloudsdk/channels/rapid/components/google-cloud-sdk-gke-gcloud-auth-plugin-linux-x86_64.tar.gz
+        sudo tar -C /usr -xzf google-cloud-sdk-gke-gcloud-auth-plugin-linux-x86_64.tar.gz
+        sudo chmod +x /usr/google-cloud-sdk/bin/gke-gcloud-auth-plugin
+        echo "/usr/google-cloud-sdk/bin" >> $GITHUB_PATH
+        which gke-gcloud-auth-plugin
+        gke-gcloud-auth-plugin --version || true
 
     # 6) Frontend Build
     - name: Build Frontend
@@ -61,13 +64,13 @@ jobs:
         -t "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest" \
         Matcha/frontend
 
-    # 8) Artifact Registry Login
+    # 8) Artifact Registry 로그인
     - name: Docker login to GAR
       run: |
         gcloud auth print-access-token | \
           docker login -u oauth2accesstoken --password-stdin https://$GAR_LOCATION-docker.pkg.dev
 
-    # 9) Push Docker Image
+    # 9) 이미지 Push
     - name: Push Docker Image
       run: |
         docker push "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:${IMAGE_TAG}"
@@ -80,7 +83,7 @@ jobs:
           --region $GKE_LOCATION \
           --project $PROJECT_ID
 
-    # 11) K8s Apply
+    # 11) K8s 배포
     - name: Apply K8s manifest
       run: |
         kubectl apply -f k8s/frontend-deployment.yaml

@@ -36,12 +36,14 @@ jobs:
     - name: Enable GKE Auth Plugin Env
       run: echo "USE_GKE_GCLOUD_AUTH_PLUGIN=True" >> $GITHUB_ENV
 
-    # ⭐ 5) gke-gcloud-auth-plugin 실행 파일을 PATH에 추가하기
-    - name: Add gke-gcloud-auth-plugin to PATH
+    # ⭐ Ubuntu 24.04에서는 수동 설치가 필요함
+    - name: Install gke-gcloud-auth-plugin manually
       run: |
-        echo "/usr/lib/google-cloud-sdk/bin" >> $GITHUB_PATH
-        ls -al /usr/lib/google-cloud-sdk/bin  # Debug
-        which gke-gcloud-auth-plugin || true  # Debug
+        curl -LO https://dl.google.com/dl/cloudsdk/channels/rapid/components/google-cloud-sdk-gke-gcloud-auth-plugin-linux-x86_64.tar.gz
+        sudo tar -C /usr -xzf google-cloud-sdk-gke-gcloud-auth-plugin-linux-x86_64.tar.gz
+        sudo chmod +x /usr/google-cloud-sdk/bin/gke-gcloud-auth-plugin
+        echo "/usr/google-cloud-sdk/bin" >> $GITHUB_PATH
+        which gke-gcloud-auth-plugin
 
     # 6) Backend JAR Build
     - name: Build Backend JAR
