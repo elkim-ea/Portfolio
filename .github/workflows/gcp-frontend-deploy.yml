@@ -37,20 +37,36 @@ jobs:
     - name: Enable GKE Auth Plugin Env
       run: echo "USE_GKE_GCLOUD_AUTH_PLUGIN=True" >> $GITHUB_ENV
 
-    # 5) Get credentials
-    - run: |
+    # ⭐ 5) gke-gcloud-auth-plugin 경로를 PATH에 추가
+    - name: Add gke-gcloud-auth-plugin to PATH
+      run: |
+        if [ -f /usr/bin/gke-gcloud-auth-plugin ]; then
+            echo "/usr/bin" >> $GITHUB_PATH
+        elif [ -f /usr/lib/google-cloud-sdk/bin/gke-gcloud-auth-plugin ]; then
+            echo "/usr/lib/google-cloud-sdk/bin" >> $GITHUB_PATH
+        else
+            echo "❌ ERROR: gke-gcloud-auth-plugin not found"
+            exit 1
+        fi
+        
+        which gke-gcloud-auth-plugin
+        gke-gcloud-auth-plugin --version || true
+
+    # 6) GKE 연결
+    - name: Authenticate to GKE
+      run: |
         gcloud container clusters get-credentials $GKE_CLUSTER \
           --region $GKE_LOCATION \
           --project $PROJECT_ID
 
-    # 6) Frontend Build
+    # 7) Frontend Build
     - name: Build Frontend
       run: |
         cd Matcha/frontend
         npm ci
         npm run build
 
-    # 7) Docker Build
+    # 8) Docker Build
     - name: Docker Build
       run: |
         docker build -f Matcha/frontend/Dockerfile \
@@ -60,24 +76,17 @@ jobs:
         -t "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest" \
         Matcha/frontend
 
-    # 8) Artifact Registry 로그인
+    # 9) Artifact Registry 로그인
     - name: Docker login to GAR
       run: |
         gcloud auth print-access-token | \
           docker login -u oauth2accesstoken --password-stdin https://$GAR_LOCATION-docker.pkg.dev
 
-    # 9) 이미지 Push
+    # 10) Push Docker Image
     - name: Push Docker Image
       run: |
         docker push "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:${IMAGE_TAG}"
         docker push "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest"
-
-    # 10) GKE 연결
-    - name: Authenticate to GKE
-      run: |
-        gcloud container clusters get-credentials $GKE_CLUSTER \
-          --region $GKE_LOCATION \
-          --project $PROJECT_ID
 
     # 11) K8s 배포
     - name: Apply K8s manifest
