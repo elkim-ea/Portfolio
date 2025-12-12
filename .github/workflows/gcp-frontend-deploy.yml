@@ -19,46 +19,46 @@ jobs:
 
     steps:
 
+    # 1) Checkout
     - name: Checkout Code
       uses: actions/checkout@v4
 
+    # 2) Google Cloud 인증
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v2
       with:
         credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-    - name: Install gcloud SDK
-      uses: google-github-actions/setup-gcloud@v2
-
-    # ⭐ 반드시 설치 필요
-    - name: Install gke-gcloud-auth-plugin
+    # 3) Google Cloud SDK 설치 (includes gke-gcloud-auth-plugin)
+    - name: Install Google Cloud SDK
       run: |
-        sudo apt-get update
-        sudo apt-get install -y google-cloud-sdk-gke-gcloud-auth-plugin
+        curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-487.0.0-linux-x86_64.tar.gz
+        tar -xf google-cloud-cli-487.0.0-linux-x86_64.tar.gz
+        sudo ./google-cloud-sdk/install.sh --quiet
+        echo "$PWD/google-cloud-sdk/bin" >> $GITHUB_PATH
 
-    # Plugin 환경변수
+    # 4) Plugin 환경변수
     - name: Enable GKE Auth Plugin Env
-      run: echo "USE_GKE_GCLOUD_AUTH_PLUGIN=True" >> $GITHUB_ENV
-
-    # PATH 등록
-    - name: Add plugin to PATH
       run: |
-        echo "/usr/lib/google-cloud-sdk/bin" >> $GITHUB_PATH
+        echo "USE_GKE_GCLOUD_AUTH_PLUGIN=True" >> $GITHUB_ENV
         which gke-gcloud-auth-plugin
         gke-gcloud-auth-plugin --version || true
 
+    # 5) GKE 연결
     - name: Authenticate to GKE
       run: |
         gcloud container clusters get-credentials $GKE_CLUSTER \
           --region $GKE_LOCATION \
           --project $PROJECT_ID
 
+    # 6) Frontend Build
     - name: Build Frontend
       run: |
         cd Matcha/frontend
         npm ci
         npm run build
 
+    # 7) Docker Build
     - name: Docker Build
       run: |
         docker build -f Matcha/frontend/Dockerfile \
@@ -68,20 +68,24 @@ jobs:
         -t "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest" \
         Matcha/frontend
 
+    # 8) Artifact Registry 로그인
     - name: Docker login to GAR
       run: |
         gcloud auth print-access-token | \
           docker login -u oauth2accesstoken --password-stdin https://$GAR_LOCATION-docker.pkg.dev
 
+    # 9) 이미지 Push
     - name: Push Docker Image
       run: |
         docker push "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:${IMAGE_TAG}"
         docker push "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest"
 
+    # 10) Kubernetes apply
     - name: Apply K8s manifest
       run: |
         kubectl apply -f k8s/frontend-deployment.yaml
         kubectl apply -f k8s/frontend-service.yaml
 
+    # 11) 롤링 업데이트
     - name: Restart frontend deployment
       run: kubectl rollout restart deployment/matcha-frontend
