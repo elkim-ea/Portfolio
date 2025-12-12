@@ -32,6 +32,13 @@ jobs:
     - name: Setup gcloud
       uses: google-github-actions/setup-gcloud@v2
 
+    # 🔥 gke-gcloud-auth-plugin을 PATH에 등록 (핵심)
+    - name: Add GKE Auth Plugin to PATH
+      run: |
+        SDK_ROOT=$(gcloud info --format='value(installation.sdk_root)')
+        echo "$SDK_ROOT/bin" >> $GITHUB_PATH
+        which gke-gcloud-auth-plugin || true
+
     # 4) 플러그인 활성화
     - name: Enable GKE Auth Plugin Env
       run: |
