@@ -19,31 +19,39 @@ jobs:
 
     steps:
 
+    # 1) Checkout
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    # 1) Google Cloud 인증
+    # 2) GCP 인증
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v2
       with:
         credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-    # 2) gcloud 설치
+    # 3) gcloud 설치
     - name: Install gcloud SDK
       uses: google-github-actions/setup-gcloud@v2
 
-    # 3) GKE Auth Plugin 활성화 (설치 X)
+    # 4) GKE Auth Plugin 환경변수 활성화
     - name: Enable GKE Auth Plugin
       run: echo "USE_GKE_GCLOUD_AUTH_PLUGIN=True" >> $GITHUB_ENV
 
-    # 4) Frontend Build
+    # ⭐ 5) gke-gcloud-auth-plugin을 PATH에 포함시키기 (필수!!)
+    - name: Add gke-gcloud-auth-plugin to PATH
+      run: |
+        echo "/usr/lib/google-cloud-sdk/bin" >> $GITHUB_PATH
+        ls -al /usr/lib/google-cloud-sdk/bin  # Debug check
+        which gke-gcloud-auth-plugin || true  # Debug output
+
+    # 6) Frontend Build
     - name: Build Frontend
       run: |
         cd Matcha/frontend
         npm ci
         npm run build
 
-    # 5) Docker Build
+    # 7) Docker Build
     - name: Docker Build
       run: |
         docker build -f Matcha/frontend/Dockerfile \
@@ -53,31 +61,31 @@ jobs:
         -t "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest" \
         Matcha/frontend
 
-    # 6) GAR 로그인
+    # 8) Artifact Registry Login
     - name: Docker login to GAR
       run: |
         gcloud auth print-access-token | \
           docker login -u oauth2accesstoken --password-stdin https://$GAR_LOCATION-docker.pkg.dev
 
-    # 7) Push Docker Image
+    # 9) Push Docker Image
     - name: Push Docker Image
       run: |
         docker push "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:${IMAGE_TAG}"
         docker push "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest"
 
-    # 8) GKE Credentials 가져오기 (플러그인 설치 NO)
+    # 10) GKE 연결
     - name: Authenticate to GKE
       run: |
         gcloud container clusters get-credentials $GKE_CLUSTER \
           --region $GKE_LOCATION \
           --project $PROJECT_ID
 
-    # 9) Apply YAML
+    # 11) K8s Apply
     - name: Apply K8s manifest
       run: |
         kubectl apply -f k8s/frontend-deployment.yaml
         kubectl apply -f k8s/frontend-service.yaml
 
-    # 10) 롤링 업데이트
+    # 12) Rolling Restart
     - name: Restart frontend deployment
       run: kubectl rollout restart deployment/matcha-frontend
