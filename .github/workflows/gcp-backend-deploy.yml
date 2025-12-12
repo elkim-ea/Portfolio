@@ -2,7 +2,7 @@ name: Deploy Backend to GKE Autopilot
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
@@ -20,82 +20,48 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    # -------------------------------------------
-    # Step 1 — Base64 → JSON 디코딩 (가장 중요!!)
-    # -------------------------------------------
-    - name: Decode SA key from base64
-      run: |
-        echo "${{ secrets.GCP_SA_KEY }}" | base64 --decode > ${HOME}/key.json
+    # 👍 수정된 인증 단계
+    - name: Google Auth
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-    # -------------------------------------------
-    # Step 2 — gcloud 설치 + 서비스 계정 활성화
-    # -------------------------------------------
-    - name: Set up gcloud CLI
+    - name: Set up gcloud
       uses: google-github-actions/setup-gcloud@v2
       with:
-        service_account_key: ${{ secrets.GCP_SA_KEY }}
         project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-    - name: Authenticate with service account
-      run: |
-        gcloud auth activate-service-account --key-file=${HOME}/key.json
-
-    # -------------------------------------------
-    # Step 3 — Docker GAR 인증
-    # -------------------------------------------
     - name: Configure Docker for Artifact Registry
       run: |
         gcloud auth configure-docker $GAR_LOCATION-docker.pkg.dev --quiet
 
-    # -------------------------------------------
-    # Step 4 — Backend JAR Build
-    # -------------------------------------------
     - name: Build Backend JAR
       run: |
         cd Matcha/backend
         chmod +x ./gradlew
         ./gradlew clean build -x test
 
-    # -------------------------------------------
-    # Step 5 — Docker Build
-    # -------------------------------------------
     - name: Build Docker Image
       run: |
         docker build -f ./Matcha/backend/Dockerfile \
-        -t "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest" \
-        ./Matcha/backend
+          -t "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest" \
+          ./Matcha/backend
 
-    # -------------------------------------------
-    # (NEW) Step — Install GKE Auth Plugin
-    # -------------------------------------------
-    - name: Install GKE Authentication Plugin
+    - name: Install GKE Auth Plugin
       run: |
         sudo apt-get update
-        sudo apt-get install -y apt-transport-https ca-certificates gnupg curl
-        echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" \
-          | sudo tee /etc/apt/sources.list.d/google-cloud-sdk.list
-        curl https://packages.cloud.google.com/apt/doc/apt-key.gpg \
-          | sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
-        sudo apt-get update
-        sudo apt-get install -y google-cloud-sdk google-cloud-sdk-gke-gcloud-auth-plugin
-        
-    # -------------------------------------------
-    # Step 6 — Docker Push
-    # -------------------------------------------
+        sudo apt-get install -y google-cloud-sdk-gke-gcloud-auth-plugin
+
     - name: Push Docker Image
       run: |
         docker push "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest"
 
-    # -------------------------------------------
-    # Step 7 — GKE 연결
-    # -------------------------------------------
     - name: Authenticate to GKE
       run: |
-        gcloud container clusters get-credentials $GKE_CLUSTER --region $GKE_LOCATION --project $PROJECT_ID
+        gcloud container clusters get-credentials $GKE_CLUSTER \
+          --region $GKE_LOCATION \
+          --project $PROJECT_ID
 
-    # -------------------------------------------
-    # Step 8 — GKE 배포
-    # -------------------------------------------
     - name: Deploy to GKE Autopilot
       run: |
         kubectl apply -f k8s/backend-deployment.yaml
