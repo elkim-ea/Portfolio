@@ -36,15 +36,11 @@ jobs:
     - name: Enable GKE Auth Plugin Env
       run: echo "USE_GKE_GCLOUD_AUTH_PLUGIN=True" >> $GITHUB_ENV
 
-    # ⭐ 5) Ubuntu 24.04 — GKE Auth Plugin 수동 설치(정답)
-    - name: Install gke-gcloud-auth-plugin manually
-      run: |
-        curl -LO https://dl.google.com/dl/cloudsdk/channels/rapid/components/google-cloud-sdk-gke-gcloud-auth-plugin-linux-x86_64.tar.gz
-        sudo mkdir -p /usr/google-cloud-sdk/bin
-        sudo tar -C /usr/google-cloud-sdk/bin -xzf google-cloud-sdk-gke-gcloud-auth-plugin-linux-x86_64.tar.gz
-        sudo chmod +x /usr/google-cloud-sdk/bin/gke-gcloud-auth-plugin
-        echo "/usr/google-cloud-sdk/bin" >> $GITHUB_PATH
-        which gke-gcloud-auth-plugin
+    # 5) Get credentials
+    - run: |
+        gcloud container clusters get-credentials $GKE_CLUSTER \
+          --region $GKE_LOCATION \
+          --project $PROJECT_ID
 
     # 6) Backend JAR Build
     - name: Build Backend JAR
