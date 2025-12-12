@@ -54,7 +54,7 @@ RUN apt-get update && \
 WORKDIR /app
 
 # JAR 복사
-COPY ./build/libs/backend-0.0.1-SNAPSHOT.jar app.jar
+COPY build/libs/backend-0.0.1-SNAPSHOT.jar app.jar
 
 # 🔥 uploads 폴더를 Spring이 찾는 경로(/app/uploads)로 복사
 COPY ./uploads /app/uploads
