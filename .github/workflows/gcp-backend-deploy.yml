@@ -32,11 +32,29 @@ jobs:
     - name: Setup gcloud
       uses: google-github-actions/setup-gcloud@v2
 
-    # 🔥 gke-gcloud-auth-plugin을 PATH에 등록 (핵심)
+    # gke-gcloud-auth-plugin 자동 탐색 및 PATH 추가
     - name: Add GKE Auth Plugin to PATH
       run: |
+        # gcloud가 설치된 경로 확인
         SDK_ROOT=$(gcloud info --format='value(installation.sdk_root)')
-        echo "$SDK_ROOT/bin" >> $GITHUB_PATH
+        echo "SDK_ROOT = $SDK_ROOT"
+
+        # 플러그인 파일 위치 찾기
+        PLUGIN_PATH=$(find $SDK_ROOT -name gke-gcloud-auth-plugin | head -n 1)
+
+        if [ -z "$PLUGIN_PATH" ]; then
+          echo "❌ gke-gcloud-auth-plugin not found in SDK_ROOT. Searching globally..."
+          PLUGIN_PATH=$(find / -name gke-gcloud-auth-plugin 2>/dev/null | head -n 1)
+        fi
+
+        if [ -z "$PLUGIN_PATH" ]; then
+          echo "❌ ERROR: gke-gcloud-auth-plugin not found anywhere!"
+          exit 1
+        fi
+
+        echo "✅ Found plugin at: $PLUGIN_PATH"
+        echo "$(dirname $PLUGIN_PATH)" >> $GITHUB_PATH
+
         which gke-gcloud-auth-plugin || true
 
     # 4) 플러그인 활성화
