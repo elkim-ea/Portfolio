@@ -91,10 +91,8 @@ jobs:
         kubectl apply -f k8s/frontend-deployment.yaml --record
         kubectl apply -f k8s/frontend-service.yaml --record
 
-    - name: Update image to new SHA
-      run: |
-        kubectl set image deployment/matcha-frontend \
-          matcha-frontend=asia-northeast3-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:${IMAGE_TAG}
+    - name: Restart frontend deployment
+      run: kubectl rollout restart deployment/matcha-frontend
 
     - name: Clean docker cache
       run: docker builder prune -a -f || true
