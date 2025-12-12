@@ -22,7 +22,7 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    # 1) 🔐 GCP 인증
+    # 1) Google Cloud 인증
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v2
       with:
@@ -32,24 +32,18 @@ jobs:
     - name: Install gcloud SDK
       uses: google-github-actions/setup-gcloud@v2
 
-    # 3) gke auth plugin 설치 (⭐ get-credentials보다 반드시 먼저!)
-    - name: Install gke-gcloud-auth-plugin
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y google-cloud-sdk-gke-gcloud-auth-plugin
-
-    # 4) 환경변수 적용
-    - name: Enable GKE Auth Plugin Env
+    # 3) GKE Auth Plugin 활성화 (설치 X)
+    - name: Enable GKE Auth Plugin
       run: echo "USE_GKE_GCLOUD_AUTH_PLUGIN=True" >> $GITHUB_ENV
 
-    # 5) 프론트엔드 빌드
+    # 4) Frontend Build
     - name: Build Frontend
       run: |
         cd Matcha/frontend
         npm ci
         npm run build
 
-    # 6) Docker Build
+    # 5) Docker Build
     - name: Docker Build
       run: |
         docker build -f Matcha/frontend/Dockerfile \
@@ -59,31 +53,31 @@ jobs:
         -t "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest" \
         Matcha/frontend
 
-    # 7) GAR 로그인
+    # 6) GAR 로그인
     - name: Docker login to GAR
       run: |
         gcloud auth print-access-token | \
           docker login -u oauth2accesstoken --password-stdin https://$GAR_LOCATION-docker.pkg.dev
 
-    # 8) 이미지 Push
+    # 7) Push Docker Image
     - name: Push Docker Image
       run: |
         docker push "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:${IMAGE_TAG}"
         docker push "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest"
 
-    # 9) GKE 연결 (⭐ plugin 설치 후 실행해야 함)
+    # 8) GKE Credentials 가져오기 (플러그인 설치 NO)
     - name: Authenticate to GKE
       run: |
         gcloud container clusters get-credentials $GKE_CLUSTER \
           --region $GKE_LOCATION \
           --project $PROJECT_ID
 
-    # 10) K8s 적용
+    # 9) Apply YAML
     - name: Apply K8s manifest
       run: |
         kubectl apply -f k8s/frontend-deployment.yaml
         kubectl apply -f k8s/frontend-service.yaml
 
-    # 11) 최신 이미지로 롤링 업데이트
+    # 10) 롤링 업데이트
     - name: Restart frontend deployment
       run: kubectl rollout restart deployment/matcha-frontend

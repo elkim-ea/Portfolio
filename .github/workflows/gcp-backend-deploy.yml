@@ -22,7 +22,7 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    # 2) GCP 인증
+    # 2) Google Cloud 인증
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v2
       with:
@@ -32,49 +32,43 @@ jobs:
     - name: Install gcloud SDK
       uses: google-github-actions/setup-gcloud@v2
 
-    # 4) gke auth plugin 설치 (⭐ 반드시 get-credentials보다 먼저)
-    - name: Install gke-gcloud-auth-plugin
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y google-cloud-sdk-gke-gcloud-auth-plugin
-
-    # 5) 환경변수 활성화
+    # 4) GKE Auth Plugin 활성화 (설치 필요 없음!)
     - name: Enable GKE Auth Plugin Env
       run: echo "USE_GKE_GCLOUD_AUTH_PLUGIN=True" >> $GITHUB_ENV
 
-    # 6) Backend JAR Build
+    # 5) Backend JAR Build
     - name: Build Backend JAR
       run: |
         cd Matcha/backend
         chmod +x ./gradlew
         ./gradlew clean build -x test
 
-    # 7) Docker Build
+    # 6) Docker Build
     - name: Build Docker Image
       run: |
         docker build -f ./Matcha/backend/Dockerfile \
         -t "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest" \
         ./Matcha/backend
 
-    # 8) GAR 로그인
+    # 7) GAR 로그인
     - name: Docker login to GAR
       run: |
         gcloud auth print-access-token | \
           docker login -u oauth2accesstoken --password-stdin https://$GAR_LOCATION-docker.pkg.dev
 
-    # 9) Docker Push
+    # 8) Docker Push
     - name: Push Docker Image
       run: |
         docker push "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest"
 
-    # 10) GKE 연결 (⭐ 플러그인 설치 + env 적용 이후에 실행해야 함)
+    # 9) GKE 연결
     - name: Authenticate to GKE
       run: |
         gcloud container clusters get-credentials $GKE_CLUSTER \
           --region $GKE_LOCATION \
           --project $PROJECT_ID
 
-    # 11) 배포
+    # 10) Deploy to GKE Autopilot
     - name: Deploy to GKE Autopilot
       run: |
         kubectl apply -f k8s/backend-deployment.yaml
