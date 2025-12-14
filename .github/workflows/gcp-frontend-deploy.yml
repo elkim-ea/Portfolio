@@ -99,6 +99,11 @@ jobs:
         cd Matcha/frontend
         npm ci
         npm run build
+    
+    - name: Check build args
+      run: |
+        echo "API_BASE_URL=${{ secrets.API_BASE_URL }}"
+        echo "IMG_BASE_URL=${{ secrets.IMG_BASE_URL }}"
 
     # 7) Docker Build
     - name: Docker Build
