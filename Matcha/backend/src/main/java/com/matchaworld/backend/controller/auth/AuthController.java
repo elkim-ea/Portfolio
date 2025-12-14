@@ -35,7 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 @Slf4j
-// @CrossOrigin(origins = {
+// @CrossOrigin(origins = {    
 //     // "http://localhost:5173",
 //     // "http://127.0.0.1:5173",
 //     // "http://localhost:3000",
