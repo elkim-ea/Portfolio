@@ -87,6 +87,18 @@ jobs:
         cd Matcha/frontend
         npm ci
         npm run build
+    
+    - name: DEBUG RAW COMMAND
+      run: |
+        echo "-------- RAW COMMAND BELOW --------"
+        echo docker build -f Matcha/frontend/Dockerfile \
+        --build-arg VITE_API_BASE_URL=${{ secrets.API_BASE_URL }} \
+        --build-arg VITE_IMG_BASE_URL=${{ secrets.IMG_BASE_URL }} \
+        -t "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:${IMAGE_TAG}" \
+        -t "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest" \
+        Matcha/frontend
+        echo "-----------------------------------"
+
     # 7) Docker Build
     - name: Docker Build
       run: |
