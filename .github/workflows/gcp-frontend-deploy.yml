@@ -67,7 +67,17 @@ jobs:
     
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
-            
+
+      - name: DEBUG INDENT
+        run: |
+          echo "LINE1>"
+          echo "docker buildx build \"
+          echo "LINE2>"
+          echo "  -f Matcha/frontend/Dockerfile \"
+          echo "LINE3>"
+          echo "  Matcha/frontend"
+
+
       - name: Docker Build
         run: |
           docker buildx build \
