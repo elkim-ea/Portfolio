@@ -22,7 +22,7 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    # 2) Google Cloud 인증
+    # 2) Google Cloud 인증.
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v2
       with:
