@@ -1,4 +1,4 @@
-name: Deploy Frontend to GKE Autopilot
+name: Deploy Frontend to GKE Autopilot!
 
 on:
   push:
