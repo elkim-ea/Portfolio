@@ -93,29 +93,22 @@ jobs:
           --region $GKE_LOCATION \
           --project $PROJECT_ID
 
-    # 6) Frontend Build.
+    # 6) Frontend Build
     - name: Build Frontend
       run: |
         cd Matcha/frontend
         npm ci
         npm run build
     
-    - name: Check build args
-      run: |
-        echo "API_BASE_URL=${{ secrets.API_BASE_URL }}"
-        echo "IMG_BASE_URL=${{ secrets.IMG_BASE_URL }}"
-
     # 7) Docker Build
     - name: Docker Build
       run: |
-        docker build \
-          -f Matcha/frontend/Dockerfile \
-          --build-arg VITE_API_BASE_URL=${{ secrets.API_BASE_URL }} \
-          --build-arg VITE_IMG_BASE_URL=${{ secrets.IMG_BASE_URL }} \
-          -t "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:${IMAGE_TAG}" \
-          -t "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest" \
-          Matcha/frontend
-
+        docker build -f Matcha/frontend/Dockerfile \
+        --build-arg VITE_API_BASE_URL=${{ secrets.API_BASE_URL }} \
+        --build-arg VITE_IMG_BASE_URL=${{ secrets.IMG_BASE_URL }} \
+        -t "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:${IMAGE_TAG}" \
+        -t "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest" \
+        Matcha/frontend
 
     # 8) Artifact Registry 로그인
     - name: Docker login to GAR
