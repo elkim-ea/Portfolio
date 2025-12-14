@@ -101,14 +101,9 @@ jobs:
         npm run build
     
     # 7) Docker Build
-    - name: Disable buildx
-      run: |
-        docker buildx rm default || true
-
     - name: Docker Build
       run: |
-        docker build \
-          -f Matcha/frontend/Dockerfile \
+        docker build -f ./Matcha/frontend/Dockerfile \
           --build-arg VITE_API_BASE_URL=${{ secrets.API_BASE_URL }} \
           --build-arg VITE_IMG_BASE_URL=${{ secrets.IMG_BASE_URL }} \
           -t "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:${IMAGE_TAG}" \
