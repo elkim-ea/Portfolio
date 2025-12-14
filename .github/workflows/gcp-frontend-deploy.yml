@@ -16,6 +16,9 @@ env:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
 
     steps:
 
@@ -23,11 +26,14 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    # 2) Google Cloud 인증
+    # 2) Google Cloud 인증 (권장 방식 - WIF 사용)
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v2
       with:
-        credentials_json: ${{ secrets.GCP_SA_KEY }}
+        # 이 값을 NCP 프로젝트 설명에서 확인한 것처럼 변경해야 합니다.
+        workload_identity_provider: projects/348820882548/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+        # 앞서 IAM에서 설정한 Service Account 이메일
+        service_account: github-actions-sa@matcha-480312.iam.gserviceaccount.com
 
     # Google Cloud CLI 설치 (공식 Action)
     - name: Setup gcloud
@@ -89,14 +95,14 @@ jobs:
         npm run build
     
 
-    # 7) Docker Build
+# 7) Docker Build (수정된 부분)
     - name: Docker Build
-      run: >
-        docker build -f Matcha/frontend/Dockerfile
-        --build-arg VITE_API_BASE_URL=${{ secrets.API_BASE_URL }}
-        --build-arg VITE_IMG_BASE_URL=${{ secrets.IMG_BASE_URL }}
-        -t "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:${IMAGE_TAG}"
-        -t "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest"
+      run: |
+        docker build -f Matcha/frontend/Dockerfile \
+        --build-arg VITE_API_BASE_URL=${{ secrets.API_BASE_URL }} \
+        --build-arg VITE_IMG_BASE_URL=${{ secrets.IMG_BASE_URL }} \
+        -t "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:${IMAGE_TAG}" \
+        -t "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest" \
         Matcha/frontend
 
     # 8) Artifact Registry 로그인
