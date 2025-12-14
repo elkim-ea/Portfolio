@@ -33,13 +33,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y apt-transport-https ca-certificates gnupg
-
-          echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | \
-            sudo tee /etc/apt/sources.list.d/google-cloud-sdk.list
-
-          curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | \
-            sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
-
+          echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee /etc/apt/sources.list.d/google-cloud-sdk.list
+          curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
           sudo apt-get update
           sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
 
@@ -47,19 +42,7 @@ jobs:
         run: |
           SDK_ROOT=$(gcloud info --format='value(installation.sdk_root)')
           echo "SDK_ROOT = $SDK_ROOT"
-
           PLUGIN_PATH=$(find $SDK_ROOT -name gke-gcloud-auth-plugin | head -n 1)
-
-          if [ -z "$PLUGIN_PATH" ]; then
-            echo "Not found, searching globally..."
-            PLUGIN_PATH=$(find / -name gke-gcloud-auth-plugin 2>/dev/null | head -n 1)
-          fi
-
-          if [ -z "$PLUGIN_PATH" ]; then
-            echo "ERROR: Plugin not found!"
-            exit 1
-          fi
-
           echo "$(dirname $PLUGIN_PATH)" >> $GITHUB_PATH
 
       - name: Verify plugin
@@ -81,12 +64,6 @@ jobs:
           cd Matcha/frontend
           npm ci
           npm run build
-        
-      - name: DEBUG RUN BLOCK
-        run: |
-            echo "===== START ====="
-            cat .github/workflows/gcp-frontend-deploy.yml
-            echo "===== END ====="
 
       - name: Docker Build
         run: |
