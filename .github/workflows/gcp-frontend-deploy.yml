@@ -13,13 +13,13 @@ env:
   IMAGE_TAG: ${{ github.sha }}
   GKE_CLUSTER: ${{ secrets.GKE_CLUSTER }}
   GKE_LOCATION: ${{ secrets.GKE_LOCATION }}
-
+  
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: 'read'
-      id-token: 'write' # WIF 사용 시 필수!
+      id-token: 'write' # WIF 사용을 위한 필수 권한
 
     steps:
 
@@ -28,56 +28,71 @@ jobs:
         uses: actions/checkout@v4
 
       # 2) Google Cloud 인증 (WIF 사용)
-      - name: Authenticate to Google Cloud (WIF)
+      - name: 🔑 Authenticate to Google Cloud (WIF)
+        id: auth
         uses: google-github-actions/auth@v2
         with:
+          # 프로젝트 번호: 348820882548, Service Account: github-actions-sa@matcha-480312.iam.gserviceaccount.com
           workload_identity_provider: projects/348820882548/locations/global/workloadIdentityPools/github-pool/providers/github-provider
           service_account: github-actions-sa@matcha-480312.iam.gserviceaccount.com
 
-      # 3) GKE 인증 정보 설정 (간소화)
+      # 3) GKE 인증 정보 설정 (간소화: get-gke-credentials 사용)
       - name: ☸️ Get GKE Credentials
         uses: google-github-actions/get-gke-credentials@v2
         with:
           cluster_name: ${{ env.GKE_CLUSTER }}
           location: ${{ env.GKE_LOCATION }}
-          project_id: ${{ env.PROJECT_ID }} # 인증 정보 로드 및 kubectl 설정 완료
+          project_id: ${{ env.PROJECT_ID }}
 
-      # 4) Frontend Build (npm ci, npm run build)
-      - name: Build Frontend
+      # 4) 백엔드 서비스 IP 주소 조회 (동적 환경 변수 주입을 위한 로직)
+      - name: 🔎 Get Backend Service External IP
+        run: |
+          BACKEND_IP=$(kubectl get svc matcha-backend-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          if [ -z "$BACKEND_IP" ]; then
+            echo "❌ ERROR: Backend Service IP not found. Is the backend service fully deployed?"
+            exit 1
+          fi
+          echo "BACKEND_IP=$BACKEND_IP" >> $GITHUB_ENV
+          
+      # 5) Frontend Build (npm)
+      - name: Build Frontend (npm ci / run build)
         run: |
           cd Matcha/frontend
           npm ci
           npm run build
       
-      # 5) Docker Build & Tag (이전 구문 오류 수정 및 컨텍스트 명확화)
-      - name: Docker Build and Tag
+      # 6) Docker Build & Tag (✅ Docker Build 구문 오류 수정)
+      - name: 🏗️ Docker Build and Tag
         run: |
+          # 동적으로 조회한 IP를 환경 변수로 사용하여 URL을 구성
+          API_URL="http://${{ env.BACKEND_IP }}"
+          IMG_URL="http://${{ env.BACKEND_IP }}/uploads"
+          
           docker build -f Matcha/frontend/Dockerfile \
-          --build-arg VITE_API_BASE_URL=${{ secrets.API_BASE_URL }} \
-          --build-arg VITE_IMG_BASE_URL=${{ secrets.IMG_BASE_URL }} \
+          --build-arg VITE_API_BASE_URL=$API_URL \
+          --build-arg VITE_IMG_BASE_URL=$IMG_URL \
           -t "${GAR_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${GAR_REPO}/${IMAGE_NAME}:${IMAGE_TAG}" \
           -t "${GAR_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${GAR_REPO}/${IMAGE_NAME}:latest" \
-          Matcha/frontend # 빌드 컨텍스트
+          Matcha/frontend # 빌드 컨텍스트를 마지막에 명확하게 지정
 
-      # 6) Artifact Registry 로그인 및 이미지 Push
-      # (WIF 인증을 통해 이미 gcloud 권한을 얻었으므로 gcloud docker login 대신 공식 Action 사용 권장)
-      - name: Push Docker Image to GAR
+      # 7) Artifact Registry 로그인 및 이미지 Push
+      - name: 🔒 Docker Login to GAR
         uses: docker/login-action@v3
         with:
           registry: ${{ GAR_LOCATION }}-docker.pkg.dev
           username: _json_key
-          password: ${{ steps.auth.outputs.access_token }} # WIF 토큰 사용
-      - name: Push Images
+          password: ${{ steps.auth.outputs.access_token }}
+
+      - name: 📤 Push Images
         run: |
           docker push "${GAR_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${GAR_REPO}/${IMAGE_NAME}:${IMAGE_TAG}"
           docker push "${GAR_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${GAR_REPO}/${IMAGE_NAME}:latest"
 
-      # 7) Kubernetes 배포
-      - name: Apply K8s manifest
+      # 8) Kubernetes 배포 및 롤링 업데이트
+      - name: 🚢 Apply K8s manifest and Restart
         run: |
-          kubectl apply -f k8s/frontend-deployment.yaml
-          kubectl apply -f k8s/frontend-service.yaml
           
-      # 8) 롤링 업데이트 강제 시작 (새 이미지 참조)
-      - name: Restart frontend deployment
-        run: kubectl rollout restart deployment/matcha-frontend
+          kubectl set image deployment/matcha-frontend matcha-frontend="${GAR_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${GAR_REPO}/${IMAGE_NAME}:${IMAGE_TAG}"
+
+        
+          kubectl apply -f k8s/frontend-service.yaml
