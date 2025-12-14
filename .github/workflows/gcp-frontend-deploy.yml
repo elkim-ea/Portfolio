@@ -33,8 +33,10 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y apt-transport-https ca-certificates gnupg
-          echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee /etc/apt/sources.list.d/google-cloud-sdk.list
-          curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
+          echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" \
+            | sudo tee /etc/apt/sources.list.d/google-cloud-sdk.list
+          curl https://packages.cloud.google.com/apt/doc/apt-key.gpg \
+            | sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
           sudo apt-get update
           sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
 
@@ -64,18 +66,9 @@ jobs:
           cd Matcha/frontend
           npm ci
           npm run build
-    
+
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
-
-      - name: DEBUG INDENT
-        run: |
-          echo "LINE1>"
-          echo "docker buildx build \"
-          echo "LINE2>"
-          echo "  -f Matcha/frontend/Dockerfile \"
-          echo "LINE3>"
-          echo "  Matcha/frontend"
 
       - name: Docker Build
         run: |
@@ -90,8 +83,8 @@ jobs:
 
       - name: Docker login to GAR
         run: |
-          gcloud auth print-access-token | \
-            docker login -u oauth2accesstoken --password-stdin https://$GAR_LOCATION-docker.pkg.dev
+          gcloud auth print-access-token \
+            | docker login -u oauth2accesstoken --password-stdin https://$GAR_LOCATION-docker.pkg.dev
 
       - name: Push Docker Image
         run: |
