@@ -81,6 +81,12 @@ jobs:
           cd Matcha/frontend
           npm ci
           npm run build
+        
+      - name: DEBUG RUN BLOCK
+        run: |
+            echo "===== START ====="
+            cat .github/workflows/gcp-frontend-deploy.yml
+            echo "===== END ====="
 
       - name: Docker Build
         run: |
