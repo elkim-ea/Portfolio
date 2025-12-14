@@ -1,3 +1,4 @@
+# .github/workflows/gcp-frontend-deploy.yml
 name: Deploy Frontend to GKE Autopilot
 
 on:
@@ -18,108 +19,65 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: 'read'
-      id-token: 'write'
+      id-token: 'write' # WIF 사용 시 필수!
 
     steps:
 
-    # 1) Checkout
-    - name: Checkout Code
-      uses: actions/checkout@v4
+      # 1) Checkout
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-    # 2) Google Cloud 인증 (권장 방식 - WIF 사용)
-    - name: Authenticate to Google Cloud
-      uses: google-github-actions/auth@v2
-      with:
-        # 이 값을 NCP 프로젝트 설명에서 확인한 것처럼 변경해야 합니다.
-        workload_identity_provider: projects/348820882548/locations/global/workloadIdentityPools/github-pool/providers/github-provider
-        # 앞서 IAM에서 설정한 Service Account 이메일
-        service_account: github-actions-sa@matcha-480312.iam.gserviceaccount.com
+      # 2) Google Cloud 인증 (WIF 사용)
+      - name: Authenticate to Google Cloud (WIF)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/348820882548/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+          service_account: github-actions-sa@matcha-480312.iam.gserviceaccount.com
 
-    # Google Cloud CLI 설치 (공식 Action)
-    - name: Setup gcloud
-      uses: google-github-actions/setup-gcloud@v2
+      # 3) GKE 인증 정보 설정 (간소화)
+      - name: ☸️ Get GKE Credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ env.GKE_CLUSTER }}
+          location: ${{ env.GKE_LOCATION }}
+          project_id: ${{ env.PROJECT_ID }} # 인증 정보 로드 및 kubectl 설정 완료
 
-    # 🔥 3) GKE Auth Plugin 설치 (가장 중요)
-    - name: Install GKE Auth Plugin
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y apt-transport-https ca-certificates gnupg
-        # Google Cloud APT repo 등록
-        echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | \
-          sudo tee /etc/apt/sources.list.d/google-cloud-sdk.list
-        curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | \
-          sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
-        sudo apt-get update
-        sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
-    # gke-gcloud-auth-plugin 자동 탐색 및 PATH 추가
-    - name: Add GKE Auth Plugin to PATH
-      run: |
-        # gcloud가 설치된 경로 확인
-        SDK_ROOT=$(gcloud info --format='value(installation.sdk_root)')
-        echo "SDK_ROOT = $SDK_ROOT"
-        # 플러그인 파일 위치 찾기
-        PLUGIN_PATH=$(find $SDK_ROOT -name gke-gcloud-auth-plugin | head -n 1)
-        if [ -z "$PLUGIN_PATH" ]; then
-          echo "❌ gke-gcloud-auth-plugin not found in SDK_ROOT. Searching globally..."
-          PLUGIN_PATH=$(find / -name gke-gcloud-auth-plugin 2>/dev/null | head -n 1)
-        fi
-        if [ -z "$PLUGIN_PATH" ]; then
-          echo "❌ ERROR: gke-gcloud-auth-plugin not found anywhere!"
-          exit 1
-        fi
-        echo "✅ Found plugin at: $PLUGIN_PATH"
-        echo "$(dirname $PLUGIN_PATH)" >> $GITHUB_PATH
-        which gke-gcloud-auth-plugin || true
-    
-    # 4) 플러그인 경로 확인
-    - name: Verify plugin
-      run: |
-        which gke-gcloud-auth-plugin || echo "Plugin not in PATH"
-        gke-gcloud-auth-plugin --version || echo "Plugin missing"
-    # 4) Plugin 환경변수
-    - name: Enable GKE Auth Plugin Env
-      run: |
-        echo "USE_GKE_GCLOUD_AUTH_PLUGIN=True" >> $GITHUB_ENV
+      # 4) Frontend Build (npm ci, npm run build)
+      - name: Build Frontend
+        run: |
+          cd Matcha/frontend
+          npm ci
+          npm run build
       
-    # 5) GKE 연결
-    - name: Authenticate to GKE
-      run: |
-        gcloud container clusters get-credentials $GKE_CLUSTER \
-          --region $GKE_LOCATION \
-          --project $PROJECT_ID
-    # 6) Frontend Build
-    - name: Build Frontend
-      run: |
-        cd Matcha/frontend
-        npm ci
-        npm run build
-    
+      # 5) Docker Build & Tag (이전 구문 오류 수정 및 컨텍스트 명확화)
+      - name: Docker Build and Tag
+        run: |
+          docker build -f Matcha/frontend/Dockerfile \
+          --build-arg VITE_API_BASE_URL=${{ secrets.API_BASE_URL }} \
+          --build-arg VITE_IMG_BASE_URL=${{ secrets.IMG_BASE_URL }} \
+          -t "${GAR_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${GAR_REPO}/${IMAGE_NAME}:${IMAGE_TAG}" \
+          -t "${GAR_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${GAR_REPO}/${IMAGE_NAME}:latest" \
+          Matcha/frontend # 빌드 컨텍스트
 
-# 7) Docker Build (수정된 부분)
-    - name: Docker Build
-      run: |
-        docker build -f Matcha/frontend/Dockerfile \
-        --build-arg VITE_API_BASE_URL=${{ secrets.API_BASE_URL }} \
-        --build-arg VITE_IMG_BASE_URL=${{ secrets.IMG_BASE_URL }} \
-        -t "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:${IMAGE_TAG}" \
-        -t "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest" \
-        Matcha/frontend
+      # 6) Artifact Registry 로그인 및 이미지 Push
+      # (WIF 인증을 통해 이미 gcloud 권한을 얻었으므로 gcloud docker login 대신 공식 Action 사용 권장)
+      - name: Push Docker Image to GAR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ GAR_LOCATION }}-docker.pkg.dev
+          username: _json_key
+          password: ${{ steps.auth.outputs.access_token }} # WIF 토큰 사용
+      - name: Push Images
+        run: |
+          docker push "${GAR_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${GAR_REPO}/${IMAGE_NAME}:${IMAGE_TAG}"
+          docker push "${GAR_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${GAR_REPO}/${IMAGE_NAME}:latest"
 
-    # 8) Artifact Registry 로그인
-    - name: Docker login to GAR
-      run: |
-        gcloud auth print-access-token | \
-          docker login -u oauth2accesstoken --password-stdin https://$GAR_LOCATION-docker.pkg.dev
-    # 9) 이미지 Push
-    - name: Push Docker Image
-      run: |
-        docker push "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:${IMAGE_TAG}"
-        docker push "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest"
-    # 10) Kubernetes apply
-    - name: Apply K8s manifest
-      run: |
-        kubectl apply -f k8s/frontend-deployment.yaml
-        kubectl apply -f k8s/frontend-service.yaml
-    # 11) 롤링 업데이트
-    - name: Restart frontend deployment
-      run: kubectl rollout restart deployment/matcha-frontend
+      # 7) Kubernetes 배포
+      - name: Apply K8s manifest
+        run: |
+          kubectl apply -f k8s/frontend-deployment.yaml
+          kubectl apply -f k8s/frontend-service.yaml
+          
+      # 8) 롤링 업데이트 강제 시작 (새 이미지 참조)
+      - name: Restart frontend deployment
+        run: kubectl rollout restart deployment/matcha-frontend
