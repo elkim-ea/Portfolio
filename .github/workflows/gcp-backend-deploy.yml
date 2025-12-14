@@ -28,7 +28,7 @@ jobs:
       with:
         credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-    # Google Cloud CLI 설치 (공식 Action)
+    # Google Cloud CLI 설치 (공식 Action).
     - name: Setup gcloud
       uses: google-github-actions/setup-gcloud@v2
 
