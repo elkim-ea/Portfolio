@@ -174,7 +174,7 @@ ON USER_TITLE(USER_ID, IS_MAIN);
 -- =================================================================
 --  더미 데이터 삽입 (Dummy Data Insertion)
 -- =================================================================
--- USE matcha_world_dev_db; -- 개발용 DB
+USE matcha_world_dev_db; -- 개발용 DB
 -- USE matcha_world_prod_db; -- ncp 운영용 DB, gcp 운영용 DB 동일
 -- 사용자 (USER) 비밀번호 모두 @1234567 입니당~
 SET @EXAMPLE_HASH = '$2a$10$EHblQZeH/Re6Rop7fwpGXOEUjfM/MXbJicHLmCDsw5O1kDWxDP4j.';
