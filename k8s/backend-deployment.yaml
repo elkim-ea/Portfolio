@@ -28,7 +28,7 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: "prod"
             - name: SPRING_DATASOURCE_URL
-              value: "jdbc:mariadb://matcha-db:3306/matcha_db"
+              value: "jdbc:mariadb://matcha-db:3306/matcha_world_prod_db"
             - name: SPRING_DATASOURCE_USERNAME
               valueFrom:
                 secretKeyRef:
