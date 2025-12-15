@@ -27,6 +27,18 @@ spec:
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: "prod"
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:mariadb://matcha-db:3306/matcha_db"
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: matcha-db-credentials
+                  key: DB_USERNAME # Secret 키 이름 확인 필요
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: matcha-db-credentials
+                  key: DB_PASSWORD # Secret 키 이름 확인 필요
           envFrom: 
             - secretRef:
                 name: matcha-db-credentials
