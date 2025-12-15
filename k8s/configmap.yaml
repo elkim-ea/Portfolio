@@ -1,9 +1,0 @@
-# configmap.yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: mariadb-initdb-config
-data:
-  01-grant.sql: |
-    GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '1234' WITH GRANT OPTION;
-    FLUSH PRIVILEGES;
