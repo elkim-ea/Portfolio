@@ -100,7 +100,7 @@ jobs:
       # 10) Docker Build & Tag (✅ YAML 구문 오류 수정 및 IP 동적 주입)
       - name: 🏗️ Docker Build and Tag
         run: |
-          API_URL="http://${{ env.BACKEND_IP }}"
+          API_URL="http://${{ env.BACKEND_IP }}/api"
           IMG_URL="http://${{ env.BACKEND_IP }}/uploads"
           
           docker build -f Matcha/frontend/Dockerfile \
