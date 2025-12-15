@@ -31,3 +31,6 @@ spec:
         - name: mariadb-init-script  # <--- [2. ConfigMap 정의 추가]
           configMap:
             name: mariadb-initdb-config
+            items: # <<<<<<<<<<<<<<<< 이 섹션을 추가합니다.
+              - key: 01-grant.sql # <<<<<<<<<< ConfigMap에 정의된 키 이름
+                path: 01-grant.sql # <<<<<<<<<< 컨테이너 내부의 파일 이름
