@@ -27,6 +27,9 @@ spec:
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: "prod"
+          envFrom: 
+            - secretRef:
+                name: matcha-db-credentials
 
           readinessProbe:
             httpGet:
