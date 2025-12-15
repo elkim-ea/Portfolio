@@ -453,3 +453,12 @@ INSERT INTO TERMS (TITLE, VERSION, CONTENT, IS_REQUIRED, CREATED_AT) VALUES
 -- 사용자 약관 동의 (USER_TERMS)
 INSERT INTO USER_TERMS (USER_ID, TERM_ID, IS_AGREED, AGREED_AT) VALUES
 (1, 1, true, NOW());
+
+-- =================================================================
+-- ✅ DB 권한 설정 (Access denied 오류 해결을 위한 필수 코드)
+-- =================================================================
+
+-- 'root' 계정이 클러스터 내부의 모든 IP 주소(%)에서 접속을 허용하도록 권한을 부여합니다.
+-- '1234'는 고객님의 DB 비밀번호입니다. (ConfigMap의 DB_PASSWORD와 일치해야 함)
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '1234' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
