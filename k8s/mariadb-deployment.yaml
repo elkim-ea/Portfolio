@@ -23,7 +23,7 @@ spec:
             - name: MARIADB_DATABASE
               value: matcha_world_prod_db
             - name: MARIADB_USER
-              value: root
+              value: matcha_user
             - name: MARIADB_PASSWORD
               value: "1234"
           ports:
