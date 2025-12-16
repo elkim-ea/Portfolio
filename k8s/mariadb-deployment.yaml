@@ -13,44 +13,28 @@ spec:
         app: matcha-db
     spec:
       # ----------------------------------------------------
-      # 1. InitContainer: ConfigMap 마운트 실패 우회
-      # ConfigMap 내용을 환경 변수로 읽어와 파일로 직접 생성합니다.
-      # ----------------------------------------------------
-      initContainers:
-        - name: create-initdb-script
-          image: busybox:1.36 
-          command: ["sh", "-c", "echo \"$(MARIADB_GRANT_SQL)\" > /init/01-grant.sql"]
-          env:
-            - name: MARIADB_GRANT_SQL
-              valueFrom:
-                configMapKeyRef:
-                  name: mariadb-initdb-config
-                  key: 01-grant.sql # ConfigMap의 키를 참조
-          volumeMounts:
-            - name: mariadb-init-script
-              mountPath: /init # 임시 볼륨에 파일을 생성
-      # ----------------------------------------------------
-      # 2. Main Container
+      # 1. InitContainer 삭제 (오류의 원인이 되는 복잡한 로직 제거)
       # ----------------------------------------------------
       containers:
         - name: mariadb
           image: mariadb:10.6
           envFrom: 
             - secretRef:
-                name: matcha-db-credentials # Secret에서 prod 환경 변수 주입
+                name: matcha-db-credentials # Secret에서 환경 변수 주입
           ports:
             - containerPort: 3306
           volumeMounts:
             - name: mariadb-data
               mountPath: /var/lib/mysql
-            # initContainer가 생성한 파일을 MariaDB의 초기화 경로에 마운트합니다.
             - name: mariadb-init-script 
+              # MariaDB 초기화 경로에 ConfigMap을 직접 마운트
               mountPath: /docker-entrypoint-initdb.d/ 
       # ----------------------------------------------------
-      # 3. Volumes: InitContainer와 Main Container가 공유할 임시 볼륨 정의
+      # 2. Volumes: ConfigMap을 직접 마운트하도록 단순화
       # ----------------------------------------------------
       volumes:
         - name: mariadb-data
           emptyDir: {}
-        - name: mariadb-init-script # InitContainer가 파일을 생성하고 Main Container가 읽는 공유 볼륨
-          emptyDir: {}
+        - name: mariadb-init-script # ConfigMap을 직접 참조
+          configMap:
+            name: mariadb-initdb-config
