@@ -1,0 +1,13 @@
+# k8s/matcha-backend-clusterip.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: matcha-backend-internal # 내부 통신용 Service 이름
+spec:
+  selector:
+    app: matcha-backend
+  ports:
+    - protocol: TCP
+      port: 8080 # Service Port (프론트엔드가 접속할 포트)
+      targetPort: 8080 # Container Port
+  type: ClusterIP

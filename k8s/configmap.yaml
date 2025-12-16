@@ -1,9 +1,37 @@
-# configmap.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: mariadb-initdb-config
+  name: frontend-nginx-config  # 1. 이름 수정 (Deployment와 일치)
 data:
-  01-grant.sql: |
-    GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '1234' WITH GRANT OPTION;
-    FLUSH PRIVILEGES;
+  nginx.conf: |
+    server {
+        listen 80;
+        root /usr/share/nginx/html;
+
+        # --- 1. API 요청 프록시 ---
+        location /api/ {
+            # 2. Host 이름 수정 및 경로 추가
+            proxy_pass http://matcha-backend-service:8080/api/; 
+            
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # --- 2. 이미지 업로드/조회 경로 프록시 (추가) ---
+        location /uploads/ {
+            # 2. Host 이름 수정 및 경로 추가
+            proxy_pass http://matcha-backend-service:8080/uploads/; 
+            
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # --- 3. SPA 라우팅 처리 ---
+        location / {
+            try_files $uri $uri/ /index.html;
+        }
+    }
