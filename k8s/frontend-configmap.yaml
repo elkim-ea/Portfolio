@@ -11,7 +11,7 @@ data:
         # --- 1. API 요청 프록시 ---
         location /api/ {
             # 2. Host 이름 수정 및 경로 추가
-            proxy_pass http://matcha-backend-internal:8080/api/; 
+            proxy_pass http://matcha-backend-service:80/api/; 
             
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
@@ -22,7 +22,7 @@ data:
         # --- 2. 이미지 업로드/조회 경로 프록시 (추가) ---
         location /uploads/ {
             # 2. Host 이름 수정 및 경로 추가
-            proxy_pass proxy_pass http://matcha-backend-internal:8080/uploads/; 
+            proxy_pass proxy_pass http://matcha-backend-service:80/uploads/; 
             
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
