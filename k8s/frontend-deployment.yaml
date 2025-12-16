@@ -17,9 +17,9 @@ spec:
         image: asia-northeast3-docker.pkg.dev/matcha-480312/matcha-repo/matcha-frontend:latest
         imagePullPolicy: Always
         ports:
-        - containerPort: 80
+          - containerPort: 80
         env:
-            - name: VITE_API_BASE_URL
-              value: "http://matcha-backend-service:8080"
-            - name: VITE_IMG_BASE_URL
-              value: "http://matcha-backend-service:8080/uploads"
+          - name: VITE_API_BASE_URL
+            value: "http://backend-service:80/api"
+          - name: VITE_IMG_BASE_URL
+            value: "http://backend-service:80/uploads"
