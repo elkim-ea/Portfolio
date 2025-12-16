@@ -119,8 +119,31 @@ jobs:
       run: |
         docker push "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest"
 
-    # 10) Deploy to GKE
-    - name: Deploy to GKE Autopilot
+    # gcp-backend-deploy.yml (수정된 10) Deploy to GKE Autopilot 단계)
+
+    # 10) Deploy to GKE Autopilot
+    - name: Deploy All Core Kubernetes Resources
       run: |
+        echo "--- Deploying Core Infrastructure (DB, Secrets, ConfigMaps) ---"
+        
+        # 1. 시크릿 적용 (DB 인증 정보)
+        # ❗ db-secret.yaml 파일명을 확인하여 적용합니다.
+        kubectl apply -f k8s/db-secret.yaml
+        
+        # 2. ConfigMap 적용 (DB 초기 스키마 및 권한 설정)
+        # ❗ mariadb-initdb-config.yaml 파일명을 확인하여 적용합니다.
+        kubectl apply -f k8s/mariadb-initdb-config.yaml
+        
+        # 3. DB Deployment 및 Service 적용 (MariaDB)
+        # ❗ DB Pod가 새로운 ConfigMap을 로드하도록 재배포합니다.
+        kubectl apply -f k8s/mariadb-deployment.yaml
+        kubectl apply -f k8s/mariadb-service.yaml
+        
+        echo "--- Deploying Backend Service ---"
+        
+        # 4. Backend Deployment 및 Service 적용
         kubectl apply -f k8s/backend-deployment.yaml
         kubectl apply -f k8s/backend-service.yaml
+        
+        # 5. 기타 Backend 클러스터 IP Service 적용 (필요하다면)
+        kubectl apply -f k8s/matcha-backend-clusterip.yaml
