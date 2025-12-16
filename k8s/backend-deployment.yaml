@@ -33,12 +33,12 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: matcha-db-credentials
-                  key: MARIADB_USER # Secret 키 이름 확인 필요
+                  key: SPRING_DATASOURCE_USERNAME # Secret 키 이름 확인 필요
             - name: SPRING_DATASOURCE_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: matcha-db-credentials
-                  key: MARIADB_PASSWORD # Secret 키 이름 확인 필요
+                  key: SPRING_DATASOURCE_PASSWORD # Secret 키 이름 확인 필요
           envFrom: 
             - secretRef:
                 name: matcha-db-credentials
