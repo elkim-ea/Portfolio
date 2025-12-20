@@ -1,6 +1,7 @@
 name: Deploy Frontend to GKE Autopilot (SA Key Auth)
 
 on:
+  workflow_dispatch:
   push:
     branches: ["main"]
 

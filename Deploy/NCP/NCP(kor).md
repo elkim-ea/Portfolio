@@ -1,6 +1,6 @@
 ## 🚀 NCP 기반 DevOps CI/CD 파이프라인 구축
 
-React + Spring Boot + Docker + Jenkins + LoadBalancer + NAT Gateway
+React + Spring Boot + MariaDB + Docker + Jenkins + LoadBalancer + NAT Gateway
 
 본 프로젝트는 **Naver Cloud Platform(NCP)** 환경에서
 Frontend(React) + Backend(Spring Boot) + MariaDB를 완전 자동화 CI/CD 파이프라인으로 배포하기 위해 설계
