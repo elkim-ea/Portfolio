@@ -140,7 +140,7 @@ pipeline {
 }
 ```
 
-### 🐳 6. Deploy Server (docker-compose)
+## 🐳 6. Deploy Server (docker-compose)
 
 ```groovy  
 version: "3.8"

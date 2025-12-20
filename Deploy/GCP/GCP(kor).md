@@ -222,9 +222,8 @@ GKE Autopilot 환경에서 Frontend / Backend / DB를 각각 Kubernetes 리소�
 - Image Pull은 배포 파이프라인이 아니라 **Pod 생성/재시작/롤링업데이트 시점(Runtime)** 에 발생
 
 📸 k8s manifest 폴더 구조 이미지  
-<img src="./docs/k8s-yaml-tree.png" width="900">
 
----
+<img src="./docs/k8s-yaml-tree.png" width="900">
 
 ## 🎉 6. 서비스 결과 화면 (실제 동작)
 
