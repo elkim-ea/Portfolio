@@ -11,7 +11,7 @@
     },
     {
       "name": "SPRING_DATASOURCE_PASSWORD",
-      "value": "8555Qatt5PRMk6E"
+      "value": "<DATABASE_PASSWORD>"
     },
     {
       "name": "SPRING_DATASOURCE_URL",
@@ -19,7 +19,7 @@
     },
     {
       "name": "SPRING_AI_OPENAI_API_KEY",
-      "value": "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"
+      "value": "<OPENAI_API_KEY>"
     },
     {
       "name": "TZ",
@@ -35,7 +35,7 @@
     },
     {
       "name": "SPRING_MAIL_PASSWORD",
-      "value": "ytbpimhxqspzazpf"
+      "value": "<MAIL_PASSWORD>"
     },
     {
       "name": "SPRING_SQL_INIT_DATA_LOCATIONS",
