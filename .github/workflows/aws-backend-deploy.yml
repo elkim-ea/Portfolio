@@ -61,7 +61,7 @@ jobs:
           container-name: ${{ env.CONTAINER_NAME }}
           image: ${{ steps.build-image.outputs.image }}
           environment-variables: |
-            SPRING_DATASOURCE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}
+            SPRING_DATASOURCE_PASSWORD=${{ secrets.RDS_PASSWORD }}
             SPRING_AI_OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
             SPRING_MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
 
