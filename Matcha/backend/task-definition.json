@@ -6,6 +6,7 @@
   "networkMode": "awsvpc",
   "cpu": "256",
   "memory": "512",
+  "executionRoleArn": "arn:aws:iam::427364073492:role/ecsTaskExecutionRole",
   "containerDefinitions": [
     {
       "name": "matcha-backend",
