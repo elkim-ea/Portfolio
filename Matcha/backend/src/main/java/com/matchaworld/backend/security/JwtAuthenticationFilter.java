@@ -29,6 +29,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+
+        return path.startsWith("/api/auth")
+            || path.startsWith("/v3/api-docs")
+            || path.startsWith("/swagger-ui")
+            || path.startsWith("/swagger-resources")
+            || path.startsWith("/uploads")
+            || "OPTIONS".equalsIgnoreCase(request.getMethod());
+    }
+
+    @Override
     protected void doFilterInternal(
             HttpServletRequest request,
             HttpServletResponse response,
@@ -37,32 +49,38 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String requestURI = request.getRequestURI();
 
-        // 수정 이유: CORS preflight 요청(OPTIONS)은 인증 필터를 거치면 403 발생하므로 우회 + CORS 헤더 직접 추가
-        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
-            response.setHeader("Access-Control-Allow-Origin", request.getHeader("Origin"));
-            response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
-            response.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type");
-            response.setHeader("Access-Control-Allow-Credentials", "true");
-            response.setStatus(HttpServletResponse.SC_OK);
-            return;
-        }
+    //     if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+    //     filterChain.doFilter(request, response);
+    //     return;
+    // }
+
+        // // 수정 이유: CORS preflight 요청(OPTIONS)은 인증 필터를 거치면 403 발생하므로 우회 + CORS 헤더 직접 추가
+        // if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+        //     response.setHeader("Access-Control-Allow-Origin", request.getHeader("Origin"));
+        //     response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
+        //     response.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type");
+        //     response.setHeader("Access-Control-Allow-Credentials", "true");
+        //     response.setStatus(HttpServletResponse.SC_OK);
+        //     return;
+        // }
 
         // 인증 필요 없는 경로는 필터 건너뛰기
-        if (requestURI.startsWith("/api/auth")
-                || requestURI.startsWith("/api/weather")
-                || requestURI.startsWith("/uploads")
-                || requestURI.startsWith("/v3/api-docs")
-                || requestURI.startsWith("/swagger-ui")) {
+        // if (requestURI.startsWith("/auth") 
+        //         || requestURI.startsWith("/api/auth")
+        //         || requestURI.startsWith("/api/weather")
+        //         || requestURI.startsWith("/uploads")
+        //         || requestURI.startsWith("/v3/api-docs")
+        //         || requestURI.startsWith("/swagger-ui")) {
 
-            log.info("🟢 JWT Filter Skip for public endpoint: {}", requestURI);
-            filterChain.doFilter(request, response);
-            return;
-        }
+        //     log.info("🟢 JWT Filter Skip for public endpoint: {}", requestURI);
+        //     filterChain.doFilter(request, response);
+        //     return;
+        // }
 
-        if (requestURI.equals("/api/health")) {
-            response.getWriter().write("ok");
-            return;
-        }
+        // if (requestURI.equals("/api/health")) {
+        //     response.getWriter().write("ok");
+        //     return;
+        // }
 
         String method = request.getMethod();
 

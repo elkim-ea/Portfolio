@@ -2,8 +2,8 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 
 // API 기본 설정
-// const API_BASE_URL: string = import.meta.env.VITE_API_BASE_URL;
-const API_BASE_URL: string = import.meta.env.VITE_API_BASE_URL || "/api";
+const API_BASE_URL: string = import.meta.env.VITE_API_BASE_URL;
+// const API_BASE_URL: string = import.meta.env.VITE_API_BASE_URL || "/api"; //gcp
 
 
 // ============ Token 관리 함수 (로컬스토리지 사용) ============
@@ -34,6 +34,15 @@ const apiClient: AxiosInstance = axios.create({
 // 요청 인터셉터
 apiClient.interceptors.request.use(
     (config) => {
+        // 🔥 로그인 / 회원가입 / refresh 는 토큰 붙이지 않음
+        if (
+        config.url?.includes('/api/auth/login') ||
+        config.url?.includes('/api/auth/refresh') ||
+        config.url?.includes('/api/auth/signup')
+        ) {
+        return config;
+        }
+
         const token = getAccessToken();
         
         if (token) {
@@ -63,6 +72,9 @@ const processQueue = (error: any, token: string | null = null) => {
 
 apiClient.interceptors.response.use(
     (response) => {
+        if (response.config.url?.includes('/api/auth/login')) {
+            return response;
+    }
         if (response.data && response.data.success === false) {
             return Promise.reject(new Error(response.data.message || '요청 처리에 실패했습니다.'));
         }
@@ -111,13 +123,13 @@ apiClient.interceptors.response.use(
 
             try {
                 const response = await axios.post(
-                    `${API_BASE_URL}/auth/refresh`,
+                    `${API_BASE_URL}/api/auth/refresh`,
                     {},
                     { withCredentials: true }
                 );
 
-                if (response.data.success && response.data.data?.accessToken) {
-                    const newToken = response.data.data.accessToken;
+                if (response.data.success && response.data.token) {
+                    const newToken = response.data.token;
                     setAccessToken(newToken);
                     
                     processQueue(null, newToken);
@@ -231,7 +243,7 @@ export const authApi = {
     // 이메일 인증번호 전송 (회원가입용)
     sendSignupEmailCode: async (email: string): Promise<SendEmailCodeResponse> => {
         try {
-            const response = await apiClient.post<SendEmailCodeResponse>('/auth/signup/send-code', {
+            const response = await apiClient.post<SendEmailCodeResponse>('/api/auth/signup/send-code', {
                 email,
             });
             return response.data;
@@ -246,7 +258,7 @@ export const authApi = {
     // 이메일 인증번호 전송 (비밀번호 찾기용)
     sendPasswordResetCode: async (email: string): Promise<SendEmailCodeResponse> => {
         try {
-            const response = await apiClient.post<SendEmailCodeResponse>('/auth/password-reset/send-code', {
+            const response = await apiClient.post<SendEmailCodeResponse>('/api/auth/password-reset/send-code', {
                 email,
             });
             return response.data;
@@ -261,7 +273,7 @@ export const authApi = {
     // 이메일 인증번호 확인
     verifyEmailCode: async (email: string, code: string): Promise<VerifyEmailCodeResponse> => {
         try {
-            const response = await apiClient.post<VerifyEmailCodeResponse>('/auth/verify-code', {
+            const response = await apiClient.post<VerifyEmailCodeResponse>('/api/auth/verify-code', {
                 email,
                 code,
             });
@@ -277,7 +289,7 @@ export const authApi = {
     // 회원가입
     signup: async (data: SignupRequest) => {
         try {
-            const response = await apiClient.post('/auth/signup', data);
+            const response = await apiClient.post('/api/auth/signup', data);
             return response.data;
         } catch (error: any) {
             if (axios.isAxiosError(error) && error.response) {
@@ -290,8 +302,9 @@ export const authApi = {
     // 로그인
     login: async (data: LoginRequest): Promise<LoginResponse> => {
         try {
+            clearAccessToken();
             // const response = await apiClient.post<LoginResponse>('/auth/login', data);
-            const response = await apiClient.post<LoginResponse>('/auth/login', data);
+            const response = await apiClient.post<LoginResponse>('/api/auth/login', data);
             return response.data;
         } catch (error: any) {
             if (axios.isAxiosError(error) && error.response) {
@@ -304,7 +317,7 @@ export const authApi = {
     // 로그아웃
     logout: async () => {
         try {
-            const response = await apiClient.post('/auth/logout');
+            const response = await apiClient.post('/api/auth/logout');
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             localStorage.removeItem('userRole');
@@ -320,7 +333,7 @@ export const authApi = {
     // 비밀번호 재설정
     resetPassword: async (data: ResetPasswordRequest): Promise<ResetPasswordResponse> => {
         try {
-            const response = await apiClient.post<ResetPasswordResponse>('/auth/password-reset', data);
+            const response = await apiClient.post<ResetPasswordResponse>('/api/auth/password-reset', data);
             return response.data;
         } catch (error) {
             if (axios.isAxiosError(error) && error.response) {
@@ -333,7 +346,7 @@ export const authApi = {
     // 모든 약관 조회
     getAllTerms: async (): Promise<Terms[]> => {
         try {
-            const response = await apiClient.get<TermsResponse>('/auth/terms');
+            const response = await apiClient.get<TermsResponse>('/api/auth/terms');
             return response.data.data || [];
         } catch (error) {
             if (axios.isAxiosError(error) && error.response) {
@@ -346,7 +359,7 @@ export const authApi = {
     // 필수 약관만 조회
     getRequiredTerms: async (): Promise<Terms[]> => {
         try {
-            const response = await apiClient.get<TermsResponse>('/auth/terms/required');
+            const response = await apiClient.get<TermsResponse>('/api/auth/terms/required');
             return response.data.data || [];
         } catch (error) {
             if (axios.isAxiosError(error) && error.response) {
@@ -359,7 +372,7 @@ export const authApi = {
     // 특정 약관 상세 조회
     getTermsById: async (id: number): Promise<Terms> => {
         try {
-            const response = await apiClient.get<{ success: boolean; message: string; data: Terms }>(`/auth/terms/${id}`);
+            const response = await apiClient.get<{ success: boolean; message: string; data: Terms }>(`/api/auth/terms/${id}`);
             if (!response.data.data) {
                 throw new Error('약관을 찾을 수 없습니다.');
             }

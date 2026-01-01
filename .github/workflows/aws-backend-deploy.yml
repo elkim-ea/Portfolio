@@ -1,0 +1,57 @@
+name: Backend CI/CD to AWS ECS
+
+on:
+  push:
+    branches: [ "main" ] # main 브랜치에 push될 때 실행
+    paths: [ "backend/**" ] # backend 폴더 내 파일 변경 시에만 실행
+
+env:
+  AWS_REGION: ap-northeast-2
+  ECR_REPOSITORY: matcha-backend          # AWS ECR 레포지토리 이름
+  ECS_SERVICE: matcha-backend-service     # ECS 서비스 이름
+  ECS_CLUSTER: matcha-cluster             # ECS 클러스터 이름
+  ECS_TASK_DEFINITION: backend/task-definition.json # 아까 만드신 파일 경로
+  CONTAINER_NAME: matcha-backend          # 작업 정의 내의 컨테이너 이름
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        run: |
+          # 백엔드 폴더로 이동 후 빌드
+          cd backend
+          docker build -t ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }} .
+          docker push ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+          echo "image=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}" >> $GITHUB_OUTPUT
+
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ env.ECS_TASK_DEFINITION }}
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ steps.build-image.outputs.image }}
+
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true

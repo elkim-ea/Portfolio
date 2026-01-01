@@ -21,8 +21,8 @@ declare global {
   }
 }
 
-// const ASSET_BASE = import.meta.env.VITE_API_BASE_URL;
-const ASSET_BASE = import.meta.env.VITE_API_BASE_URL || "/api" ;
+const ASSET_BASE = import.meta.env.VITE_API_BASE_URL;
+// const ASSET_BASE = import.meta.env.VITE_API_BASE_URL || "/api" ;   //gcp
 const ActivityPage: React.FC = () => {
   const [data, setData] = useState<ActivityResponse | null>(null);
   const [loading, setLoading] = useState(true);

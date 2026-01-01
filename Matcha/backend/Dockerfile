@@ -61,4 +61,5 @@ COPY ./uploads /app/uploads
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-Duser.timezone=Asia/Seoul", "-jar", "app.jar"]
+# ENTRYPOINT ["java", "-Duser.timezone=Asia/Seoul", "-jar", "app.jar"]
+ENTRYPOINT ["sh","-c","java -Duser.timezone=Asia/Seoul -jar app.jar || sleep 3600"]

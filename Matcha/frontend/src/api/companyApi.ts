@@ -16,13 +16,13 @@ export interface Company {
 export const companyApi = {
   // ESG 선도 기업 리스트 조회
   getLeading: async (): Promise<CommonResponse<Company[]>> => {
-    const response = await axiosAuth.get("/company/leading");
+    const response = await axiosAuth.get("/api/company/leading");
     return response.data;
   },
 
   // ESG 후원 기업 리스트 조회
   getSponsor: async (): Promise<CommonResponse<Company[]>> => {
-    const response = await axiosAuth.get("/company/sponsor");
+    const response = await axiosAuth.get("/api/company/sponsor");
     return response.data;
   },
 
@@ -30,7 +30,7 @@ export const companyApi = {
   getDetail: async (
     companyId: number
   ): Promise<CommonResponse<Company>> => {
-    const response = await axiosAuth.get(`/company/${companyId}`);
+    const response = await axiosAuth.get(`/api/company/${companyId}`);
     return response.data;
   },
 };

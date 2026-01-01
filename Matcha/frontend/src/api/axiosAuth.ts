@@ -3,8 +3,8 @@ import { getAccessToken, clearAccessToken } from "./authApi";
 
 // 기본 axios 인스턴스 설정
 const axiosAuth = axios.create({
-  // baseURL: import.meta.env.VITE_API_BASE_URL,
-   baseURL: import.meta.env.VITE_API_BASE_URL || "/api",
+  baseURL: import.meta.env.VITE_API_BASE_URL,
+  //  baseURL: import.meta.env.VITE_API_BASE_URL || "/api", //gcp
   withCredentials: true, // CORS 쿠키 허용
 });
 

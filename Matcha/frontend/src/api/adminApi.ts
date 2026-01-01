@@ -40,27 +40,27 @@ export const adminApi = {
       filters?: UserSearchFilterParams
     ): Promise<PaginatedResponse<User>> => {
       const query = buildQueryString({ ...pagination, ...filters });
-      const response = await adminApiClient.get(`/admin/users?${query}`);
+      const response = await adminApiClient.get(`/api/admin/users?${query}`);
       return response.data.data;
     },
 
     getById: async (id: number): Promise<User> => {
-      const response = await adminApiClient.get(`/admin/users/${id}`);
+      const response = await adminApiClient.get(`/api/admin/users/${id}`);
       return response.data.data;
     },
 
     update: async (id: number, data: Partial<User>): Promise<User> => {
-      const response = await adminApiClient.put(`/admin/users/${id}`, data);
+      const response = await adminApiClient.put(`/api/admin/users/${id}`, data);
       return response.data.data;
     },
 
     delete: async (id: number): Promise<void> => {
-      await adminApiClient.delete(`/admin/users/${id}`);
+      await adminApiClient.delete(`/api/admin/users/${id}`);
     },
 
     changeRole: async (id: number, role: string): Promise<User> => {
       const response = await adminApiClient.patch(
-        `/admin/users/${id}/role?role=${role}`
+        `/api/admin/users/${id}/role?role=${role}`
       );
 
       //  자신의 권한을 변경한 경우
@@ -89,31 +89,31 @@ export const adminApi = {
       filters?: QuestSearchFilterParams
     ): Promise<PaginatedResponse<Quest>> => {
       const query = buildQueryString({ ...pagination, ...filters });
-      const response = await adminApiClient.get(`/admin/quests?${query}`);
+      const response = await adminApiClient.get(`/api/admin/quests?${query}`);
       return response.data.data;
     },
 
     getById: async (id: number): Promise<Quest> => {
-      const response = await adminApiClient.get(`/admin/quests/${id}`);
+      const response = await adminApiClient.get(`/api/admin/quests/${id}`);
       return response.data.data;
     },
 
     create: async (data: QuestCreateRequest): Promise<Quest> => {
-      const response = await adminApiClient.post('/admin/quests', data);
+      const response = await adminApiClient.post('/api/admin/quests', data);
       return response.data.data;
     },
 
     update: async (id: number, data: QuestUpdateRequest): Promise<Quest> => {
-      const response = await adminApiClient.put(`/admin/quests/${id}`, data);
+      const response = await adminApiClient.put(`/api/admin/quests/${id}`, data);
       return response.data.data;
     },
 
     delete: async (id: number): Promise<void> => {
-      await adminApiClient.delete(`/admin/quests/${id}`);
+      await adminApiClient.delete(`/api/admin/quests/${id}`);
     },
 
     toggleActive: async (id: number): Promise<Quest> => {
-      const response = await adminApiClient.patch(`/admin/quests/${id}/toggle-active`);
+      const response = await adminApiClient.patch(`/api/admin/quests/${id}/toggle-active`);
       return response.data.data;
     },
   },
@@ -125,31 +125,31 @@ export const adminApi = {
       filters?: TitleSearchFilterParams
     ): Promise<PaginatedResponse<Title>> => {
       const query = buildQueryString({ ...pagination, ...filters });
-      const response = await adminApiClient.get(`/admin/titles?${query}`);
+      const response = await adminApiClient.get(`/api/admin/titles?${query}`);
       return response.data.data;
     },
 
     getById: async (id: number): Promise<Title> => {
-      const response = await adminApiClient.get(`/admin/titles/${id}`);
+      const response = await adminApiClient.get(`/api/admin/titles/${id}`);
       return response.data.data;
     },
 
     create: async (data: TitleCreateRequest): Promise<Title> => {
-      const response = await adminApiClient.post('/admin/titles', data);
+      const response = await adminApiClient.post('/api/admin/titles', data);
       return response.data.data;
     },
 
     update: async (id: number, data: TitleUpdateRequest): Promise<Title> => {
-      const response = await adminApiClient.put(`/admin/titles/${id}`, data);
+      const response = await adminApiClient.put(`/api/admin/titles/${id}`, data);
       return response.data.data;
     },
 
     delete: async (id: number): Promise<void> => {
-      await adminApiClient.delete(`/admin/titles/${id}`);
+      await adminApiClient.delete(`/api/admin/titles/${id}`);
     },
 
     toggleActive: async (id: number): Promise<Title> => {
-      const response = await adminApiClient.patch(`/admin/titles/${id}/toggle-active`);
+      const response = await adminApiClient.patch(`/api/admin/titles/${id}/toggle-active`);
       return response.data.data;
     },
   },
@@ -161,12 +161,12 @@ export const adminApi = {
       filters?: CompanySearchFilterParams
     ): Promise<PaginatedResponse<Company>> => {
       const query = buildQueryString({ ...pagination, ...filters });
-      const response = await adminApiClient.get(`/admin/companies?${query}`);
+      const response = await adminApiClient.get(`/api/admin/companies?${query}`);
       return response.data.data;
     },
 
     getById: async (id: number): Promise<Company> => {
-      const response = await adminApiClient.get(`/admin/companies/${id}`);
+      const response = await adminApiClient.get(`/api/admin/companies/${id}`);
       return response.data.data;
     },
 
@@ -193,7 +193,7 @@ export const adminApi = {
         formData.append('companyLogo', "https://example.com/logo.png");
       }
 
-      const response = await adminApiClient.post('/admin/companies', formData, {
+      const response = await adminApiClient.post('/api/admin/companies', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -227,7 +227,7 @@ export const adminApi = {
       } else {
         formData.append('companyLogo', "");
       }
-      const response = await adminApiClient.put(`/admin/companies/${id}`, formData, {
+      const response = await adminApiClient.put(`/api/admin/companies/${id}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -241,7 +241,7 @@ export const adminApi = {
     },
 
     delete: async (id: number): Promise<void> => {
-      await adminApiClient.delete(`/admin/companies/${id}`);
+      await adminApiClient.delete(`/api/admin/companies/${id}`);
     },
   },
 

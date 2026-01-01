@@ -1,9 +1,15 @@
+SET FOREIGN_KEY_CHECKS = 0; -- 외래키 체크 일시 중단
+SET AUTOCOMMIT = 0;
+START TRANSACTION;
+DROP TABLE IF EXISTS USER_TERMS, TERMS, AUTH_CODE, COMPANY_CATEGORY, ESG_CATEGORY, COMPANY, USER_TITLE, TITLE, CERTIFICATION, USER_QUEST, QUEST, LIFE_LOG, USER;
+-- SET FOREIGN_KEY_CHECKS = 1; -- 다시 활성화
+
 -- =================================================================
 --  테이블 생성 (Schema Definition)
 -- =================================================================
 
--- 테이블이 존재하면 삭제 (개발 초기 단계에서 스키마 변경 시 유용)
-DROP TABLE IF EXISTS USER_TERMS, TERMS, AUTH_CODE, COMPANY_CATEGORY, ESG_CATEGORY, COMPANY, USER_TITLE, TITLE, CERTIFICATION, USER_QUEST, QUEST, LIFE_LOG, USER;
+-- -- 테이블이 존재하면 삭제 (개발 초기 단계에서 스키마 변경 시 유용)
+-- DROP TABLE IF EXISTS USER_TERMS, TERMS, AUTH_CODE, COMPANY_CATEGORY, ESG_CATEGORY, COMPANY, USER_TITLE, TITLE, CERTIFICATION, USER_QUEST, QUEST, LIFE_LOG, USER;
 
 -- 사용자 테이블 (USER)
 CREATE TABLE USER (
@@ -73,7 +79,7 @@ CREATE TABLE CERTIFICATION (
     VALIDATED_AT DATETIME,
     CREATED_AT DATETIME NOT NULL,
     MODEL_TYPE ENUM('OPENAPI', 'HUGGING') NOT NULL,
-    CONFIDENCE_SCORE DECIMAL(5,2) NOT NULL,
+    CONFIDENCE_SCORE DOUBLE NOT NULL,
     FOREIGN KEY (UQ_ID) REFERENCES USER_QUEST(UQ_ID) ON DELETE CASCADE,
     FOREIGN KEY (USER_ID) REFERENCES USER(USER_ID) ON DELETE CASCADE
 );
@@ -155,10 +161,6 @@ CREATE TABLE USER_TERMS (
     UNIQUE (USER_ID, TERM_ID)
 );
 
--- =======================================
--- ✅ 추가 스키마 수정 (2025-10-31)
--- =======================================
-
 -- QUEST 테이블 CATEGORY 컬럼 추가
 ALTER TABLE QUEST
 ADD COLUMN IF NOT EXISTS CATEGORY ENUM('E', 'S') NOT NULL DEFAULT 'E';
@@ -171,18 +173,18 @@ ADD COLUMN IF NOT EXISTS IS_MAIN BOOLEAN NOT NULL DEFAULT FALSE;
 CREATE INDEX IF NOT EXISTS idx_user_title_is_main
 ON USER_TITLE(USER_ID, IS_MAIN);
 
--- =================================================================
---  더미 데이터 삽입 (Dummy Data Insertion)
--- =================================================================
--- USE matcha_world_dev_db; -- 개발용 DB
-CREATE DATABASE IF NOT EXISTS matcha_world_prod_db
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
+-- -- =================================================================
+-- --  더미 데이터 삽입 (Dummy Data Insertion)
+-- -- =================================================================
+-- -- USE matcha_world_dev_db; -- 개발용 DB
+-- CREATE DATABASE IF NOT EXISTS matcha_world_prod_db
+--   CHARACTER SET utf8mb4
+--   COLLATE utf8mb4_unicode_ci;
   
-USE matcha_world_prod_db; -- ncp 운영용 DB, gcp 운영용 DB 동일
+-- USE matcha_world_prod_db; -- ncp 운영용, gcp 운영용, aws 운영용 DB 동일
 -- 사용자 (USER) 비밀번호 모두 @1234567 입니당~
 SET @EXAMPLE_HASH = '$2a$10$EHblQZeH/Re6Rop7fwpGXOEUjfM/MXbJicHLmCDsw5O1kDWxDP4j.';
-INSERT INTO USER (EMAIL, PASSWORD, NICKNAME, `CHARACTER`, ESG_SCORE, E_SCORE, S_SCORE, `ROLE`, CREATED_AT, UPDATED_AT) VALUES
+INSERT IGNORE INTO USER (EMAIL, PASSWORD, NICKNAME, `CHARACTER`, ESG_SCORE, E_SCORE, S_SCORE, `ROLE`, CREATED_AT, UPDATED_AT) VALUES
 ('matcha@gmail.com', @EXAMPLE_HASH, '마차씌', '/uploads/character/flower.png', 150, 80, 70, 'ADMIN', '2025-04-28 10:22:00', '2025-04-28 09:10:00'),
 ('greenbean@example.com', @EXAMPLE_HASH, '그린콩', '/uploads/character/tree.png', 480, 300, 180, 'USER', '2025-05-01 10:22:00', '2025-05-15 09:10:00'),
 ('earth@example.com', @EXAMPLE_HASH, '지구랑', '/uploads/character/earth.png', 650, 390, 260, 'USER', '2025-05-04 14:30:00', '2025-05-19 16:05:00'),
@@ -220,7 +222,7 @@ INSERT INTO USER (EMAIL, PASSWORD, NICKNAME, `CHARACTER`, ESG_SCORE, E_SCORE, S_
 ('user35@example.com', @EXAMPLE_HASH, '태양봄', '/uploads/character/sun.png', 1700, 1020, 680, 'USER', '2025-11-09 09:50:00', '2025-11-18 08:10:00');
 
 -- 라이프 로그 (LIFE_LOG)
-INSERT INTO LIFE_LOG (USER_ID, CONTENT, CATEGORY, LOGGED_AT, ESG_SCORE_EFFECT) VALUES
+INSERT IGNORE INTO LIFE_LOG (USER_ID, CONTENT, CATEGORY, LOGGED_AT, ESG_SCORE_EFFECT) VALUES
 (1, '아침 출근길에 평소보다 일찍 나와 걸어서 회사에 갔다. 시원한 바람을 느끼며 출근하니 기분이 한결 좋아졌다.', 'E', '2025-10-11 08:10:00', 1.00),
 (1, '동료가 어려워하던 엑셀 보고서 정리를 도와주었다. 덕분에 팀 전체 일정이 조금 더 수월하게 조정되었다.', 'S', '2025-10-11 10:40:00', 1.00),
 (1, '점심 식사 후 남은 음식 없이 깨끗이 접시를 비웠다. 사소하지만 음식물 쓰레기를 줄이는 데 도움이 되었다.', 'E', '2025-10-11 12:40:00', 1.00),
@@ -309,7 +311,7 @@ INSERT INTO LIFE_LOG (USER_ID, CONTENT, CATEGORY, LOGGED_AT, ESG_SCORE_EFFECT) V
 (1, '퇴근 후 방 전등을 모두 끄고 콘센트를 점검했다.', 'E', '2025-11-06 19:10:00', 1.00);
 
 
-INSERT INTO QUEST (ADMIN_ID, TITLE, DESCRIPTION, REWARD_SCORE, CATEGORY,`TYPE`, AUTH_TYPE, IS_ACTIVE, MAX_ATTEMPTS, CONDITION_JSON, CREATED_AT) VALUES
+INSERT IGNORE INTO QUEST (ADMIN_ID, TITLE, DESCRIPTION, REWARD_SCORE, CATEGORY,`TYPE`, AUTH_TYPE, IS_ACTIVE, MAX_ATTEMPTS, CONDITION_JSON, CREATED_AT) VALUES
 -- 🌿 DAILY (10월 1일 ~ 12일)
 (1, '텀블러 사용하기', '일회용 컵 대신 텀블러를 사용해보세요.', 10, 'E', 'DAILY', 'IMAGE', TRUE, 1, '{}', '2025-10-01 09:10:00'),
 (1, '불 끄기 실천', '외출 시 불을 모두 꺼 에너지를 절약하세요.', 10, 'E', 'DAILY', 'TEXT', TRUE, 1, '{}', '2025-10-02 08:30:00'),
@@ -377,15 +379,15 @@ INSERT INTO QUEST (ADMIN_ID, TITLE, DESCRIPTION, REWARD_SCORE, CATEGORY,`TYPE`, 
 (1, '탄소중립 실천 보고서', '한 달 동안의 탄소 절감 실천 내역을 보고서로 작성해보세요.', 200, 'E', 'SEASON', 'TEXT', TRUE, 10, '{"temp_min": 5, "pm10_max": 25}', '2025-11-12 10:00:00');
 
 -- 사용자 퀘스트 (USER_QUEST)
-INSERT INTO USER_QUEST (USER_ID, QUEST_ID, STATUS, ATTEMPT_COUNT, STARTED_AT, COMPLETED_AT) VALUES
+INSERT IGNORE INTO USER_QUEST (USER_ID, QUEST_ID, STATUS, ATTEMPT_COUNT, STARTED_AT, COMPLETED_AT) VALUES
 (1, 1, 'PENDING', 1, '2025-10-25 20:00:00', NULL);
 
 -- 인증 (CERTIFICATION)
-INSERT INTO CERTIFICATION ( UQ_ID, USER_ID, AUTH_TYPE, AUTH_CONTENT, VALIDATION_STATUS, VALIDATED_AT, CREATED_AT, MODEL_TYPE, CONFIDENCE_SCORE) VALUES
+INSERT IGNORE INTO CERTIFICATION ( UQ_ID, USER_ID, AUTH_TYPE, AUTH_CONTENT, VALIDATION_STATUS, VALIDATED_AT, CREATED_AT, MODEL_TYPE, CONFIDENCE_SCORE) VALUES
 (1, 1, 'IMAGE', '/uploads/auth_type/locknlock.png', 'PENDING', NULL, NOW(), 'HUGGING', 50.00);
 
 -- 칭호 (TITLE)
-INSERT INTO TITLE (NAME, DESCRIPTION, CONDITION_JSON) VALUES
+INSERT IGNORE INTO TITLE (NAME, DESCRIPTION, CONDITION_JSON) VALUES
 ('텀블러 새싹', '첫 텀블러 사용 인증에 성공하면 획득해요!', '{"questTitle": "텀블러 사용하기", "count": 1}'),
 ('작은 실천가', '텀블러 사용 10회 인증에 성공하면 획득해요!', '{"questTitle": "텀블러 사용하기", "count": 10}'),
 ('꾸준함의 증표', '일주일 연속으로 텀블러 사용을 인증하면 획득해요!', '{"questTitle": "텀블러 사용하기", "count": 20}'),
@@ -398,11 +400,11 @@ INSERT INTO TITLE (NAME, DESCRIPTION, CONDITION_JSON) VALUES
 
 
 -- 사용자 칭호 (USER_TITLE)
-INSERT INTO USER_TITLE (USER_ID, TITLE_ID, EARNED_AT,  IS_MAIN) VALUES
+INSERT IGNORE INTO USER_TITLE (USER_ID, TITLE_ID, EARNED_AT,  IS_MAIN) VALUES
 (1, 3, '2025-10-01 09:00:00', TRUE);
 
 -- 회사 (COMPANY)
-INSERT INTO COMPANY (COMPANY_NAME, COMPANY_LOGO, COMPANY_WEBSITE_URL, CREATED_AT, UPDATED_AT) VALUES
+INSERT IGNORE INTO COMPANY (COMPANY_NAME, COMPANY_LOGO, COMPANY_WEBSITE_URL, CREATED_AT, UPDATED_AT) VALUES
 ('삼성', '/uploads/logo/samsung.png', 'https://www.samsung.com/sec/sustainability/main/', '2025-05-02 09:30:00', '2025-05-15 10:45:00'),
 ('현대자동차', '/uploads/logo/현대자동차.png', 'https://www.hyundaigroup.com/social/report.asp', '2025-05-10 11:20:00', '2025-05-28 14:50:00'),
 ('포스코', '/uploads/logo/포스코.png', 'https://sustainability.posco.com/S91/S91F10/kor/cmspage.do?mmcd=1745996979005381', '2025-06-01 10:00:00', '2025-06-15 09:10:00'),
@@ -419,13 +421,13 @@ INSERT INTO COMPANY (COMPANY_NAME, COMPANY_LOGO, COMPANY_WEBSITE_URL, CREATED_AT
 ('NH농협생명', '/uploads/logo/NH농협생명.png', 'https://www.nhlife.co.kr/ho/ci/HOCI0052M00.nhl', '2025-09-18 09:50:00', NULL);
 
 -- ESG 카테고리 (ESG_CATEGORY)
-INSERT INTO ESG_CATEGORY ( CATEGORY_NAME) VALUES
+INSERT IGNORE INTO ESG_CATEGORY ( CATEGORY_NAME) VALUES
 ('LEADER'),
 ('SPONSOR');
 
 
 -- 회사-카테고리 매핑 (COMPANY_CATEGORY)
-INSERT INTO COMPANY_CATEGORY (COMPANY_ID, CATEGORY_ID) VALUES
+INSERT IGNORE INTO COMPANY_CATEGORY (COMPANY_ID, CATEGORY_ID) VALUES
 (1, 1),
 (2, 1),
 (3, 1),
@@ -442,11 +444,11 @@ INSERT INTO COMPANY_CATEGORY (COMPANY_ID, CATEGORY_ID) VALUES
 (14, 2);
 
 -- 인증 코드 (AUTH_CODE) 
-INSERT INTO AUTH_CODE (EMAIL, AUTH_CODE, EXPIRY_TIME, IS_VERIFIED, CREATED_AT) VALUES
+INSERT IGNORE INTO AUTH_CODE (EMAIL, AUTH_CODE, EXPIRY_TIME, IS_VERIFIED, CREATED_AT) VALUES
 ('matcha@google.com', 'A1B2C3', DATE_ADD(NOW(), INTERVAL 5 MINUTE), false, NOW());
 
 -- 약관 (TERMS)
-INSERT INTO TERMS (TITLE, VERSION, CONTENT, IS_REQUIRED, CREATED_AT) VALUES
+INSERT IGNORE INTO TERMS (TITLE, VERSION, CONTENT, IS_REQUIRED, CREATED_AT) VALUES
 ('서비스 이용약관', '1.0', '안녕하세요! Matacha World에 오신 것을 환영합니다. 본 약관은 저희 서비스를 이용하는 모든 분들을 위한 약속입니다.
 - 서비스 이용: 여러분은 Matacha World를 통해 일상 속 ESG 활동을 기록하고, 재미있는 퀘스트에 참여하며 선한 영향력을 나눌 수 있습니다.
 - 게시물 책임과 권리: 서비스에 올리는 사진이나 글(게시물)의 책임과 권리는 회원님 본인에게 있습니다. 다만, 저희는 서비스를 운영하고 홍보하기 위해 회원님의 게시물을 사용할 수 있습니다. 다른 사람의 권리를 침해하는 게시물은 올릴 수 없습니다.
@@ -455,7 +457,7 @@ INSERT INTO TERMS (TITLE, VERSION, CONTENT, IS_REQUIRED, CREATED_AT) VALUES
 개인정보는 개인정보 처리방침에 따라 안전하게 관리됩니다. 약관은 변경될 수 있으며, 변경 시에는 미리 알려드립니다. 즐거운 ESG 실천, Matacha World와 함께해요!', true, NOW());
 
 -- 사용자 약관 동의 (USER_TERMS)
-INSERT INTO USER_TERMS (USER_ID, TERM_ID, IS_AGREED, AGREED_AT) VALUES
+INSERT IGNORE INTO USER_TERMS (USER_ID, TERM_ID, IS_AGREED, AGREED_AT) VALUES
 (1, 1, true, NOW());
 
 -- =================================================================
@@ -466,3 +468,5 @@ INSERT INTO USER_TERMS (USER_ID, TERM_ID, IS_AGREED, AGREED_AT) VALUES
 -- '1234'는 고객님의 DB 비밀번호입니다. (ConfigMap의 DB_PASSWORD와 일치해야 함)
 -- GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '1234' WITH GRANT OPTION;
 -- FLUSH PRIVILEGES;
+COMMIT;
+SET FOREIGN_KEY_CHECKS = 1; -- 다시 활성화

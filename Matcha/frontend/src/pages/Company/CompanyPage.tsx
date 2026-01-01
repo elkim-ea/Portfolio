@@ -2,7 +2,8 @@
 import React, { useEffect, useState } from "react";
 import { companyApi } from "@/api/companyApi";
 import type { Company } from "@/api/companyApi";
-import.meta.env.VITE_API_BASE_URL || "/api";
+// import.meta.env.VITE_API_BASE_URL || "/api";  //gcp
+import.meta.env.VITE_API_BASE_URL;
 
 const CompanyPage: React.FC = () => {
   const [selectedTier, setSelectedTier] = useState<"LEADER" | "SPONSOR">(

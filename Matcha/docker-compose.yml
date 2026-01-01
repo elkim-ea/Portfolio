@@ -26,8 +26,9 @@ services:
       db:
         condition: service_healthy
     environment:
+    #=====================[ DATABASE AWS:운영용]=====================
       SPRING_DATASOURCE_URL: jdbc:mariadb://db:3306/${MYSQL_DATABASE}?allowPublicKeyRetrieval=true&useSSL=false
-      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_USERNAME: root 
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       SPRING_PROFILES_ACTIVE: prod
       NCP_ACCESS_KEY: ${NCP_ACCESS_KEY}

@@ -1,8 +1,8 @@
 import axios from "axios";
 
 const uploadApi = axios.create({
-  // baseURL: import.meta.env.VITE_API_BASE_URL,
-   baseURL: import.meta.env.VITE_API_BASE_URL || "/api",
+  baseURL: import.meta.env.VITE_API_BASE_URL,
+  //  baseURL: import.meta.env.VITE_API_BASE_URL || "/api", //gcp
   withCredentials: true,
 });
 

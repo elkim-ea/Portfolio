@@ -75,7 +75,7 @@ export const userMyApi = {
    */
   getProfile: async (): Promise<UserProfile> => {
     try {
-      const response = await apiClient.get<ApiResponse<UserProfile>>('/my/profile');
+      const response = await apiClient.get<ApiResponse<UserProfile>>('/api/my/profile');
       
       if (!response.data.success) {
         throw new Error(response.data.message || '프로필 조회에 실패했습니다.');
@@ -93,7 +93,7 @@ export const userMyApi = {
    */
   updateNickname: async (currentPassword: string, newNickname: string): Promise<void> => {
     try {
-      const response = await apiClient.put<ApiResponse>('/my/profile/nickname', {
+      const response = await apiClient.put<ApiResponse>('/api/my/profile/nickname', {
         currentPassword,
         newNickname,
       });
@@ -112,7 +112,7 @@ export const userMyApi = {
    */
   updatePassword: async (currentPassword: string, newPassword: string): Promise<void> => {
     try {
-      const response = await apiClient.put<ApiResponse>('/my/profile/password', {
+      const response = await apiClient.put<ApiResponse>('/api/my/profile/password', {
         currentPassword,
         newPassword,
       });
@@ -131,7 +131,7 @@ export const userMyApi = {
    */
   deleteAccount: async (currentPassword: string): Promise<void> => {
     try {
-      const response = await apiClient.delete<ApiResponse>('/my/profile', {
+      const response = await apiClient.delete<ApiResponse>('/api/my/profile', {
         data: { currentPassword },
       });
       
@@ -150,8 +150,8 @@ export const userMyApi = {
   setMainTitle: async (titleId: number | null): Promise<void> => {
     try {
       const url = titleId !== null 
-        ? `/my/profile/title/${titleId}` 
-        : `/my/profile/title/null`;
+        ? `/api/my/profile/title/${titleId}` 
+        : `/api/my/profile/title/null`;
       
       const response = await apiClient.put<ApiResponse>(url);
       

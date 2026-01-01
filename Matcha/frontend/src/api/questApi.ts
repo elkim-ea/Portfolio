@@ -37,7 +37,7 @@ export interface QuestSubmitResponse {
 export const questApi = {
   // 메인 퀘스트 조회 (홈 화면)
   getMain: async (lat: number, lon: number): Promise<CommonResponse<any>> => {
-    const response = await axiosAuth.get("/quest/main", {
+    const response = await axiosAuth.get("/api/quest/main", {
       params: { lat, lon },
     });
     return response.data;
@@ -45,23 +45,23 @@ export const questApi = {
 
   // 오늘의 퀘스트 조회
   getToday: async (): Promise<Quest[]> => {
-    const response = await axiosAuth.get("/quest/today");
+    const response = await axiosAuth.get("/api/quest/today");
     return response.data?.data || []; // 안전하게 처리
   },
   // 주간 퀘스트 조회
   getWeekly: async (): Promise<Quest[]> => {
-    const response = await axiosAuth.get("/quest/weekly");
+    const response = await axiosAuth.get("/api/quest/weekly");
     return response.data?.data || [];
   },
   // 시즌 퀘스트 조회
   getSeason: async (): Promise<Quest[]> => {
-    const response = await axiosAuth.get("/quest/season");
+    const response = await axiosAuth.get("/api/quest/season");
     return response.data?.data || [];
   },
 
   // 내 퀘스트 현황 조회
   getMyQuests: async (): Promise<CommonResponse<Quest[]>> => {
-    const response = await axiosAuth.get("/quest/mypage");
+    const response = await axiosAuth.get("/api/quest/mypage");
     return response.data;
   },
 
@@ -70,7 +70,7 @@ export const questApi = {
     questId: number,
     data: QuestSubmission
   ): Promise<CommonResponse<QuestSubmitResponse>> => {
-    const response = await axiosAuth.post(`/quest/${questId}/submit`, data);
+    const response = await axiosAuth.post(`/api/quest/${questId}/submit`, data);
     return response.data;
   },
 
