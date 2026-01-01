@@ -11,7 +11,7 @@ env:
   ECR_REPOSITORY: matcha-backend          # AWS ECR 레포지토리 이름
   ECS_SERVICE: matcha-backend-service     # ECS 서비스 이름
   ECS_CLUSTER: matcha-cluster             # ECS 클러스터 이름
-  ECS_TASK_DEFINITION: backend/task-definition.json # 아까 만드신 파일 경로
+  ECS_TASK_DEFINITION: Matcha/backend/task-definition.json # 아까 만드신 파일 경로
   CONTAINER_NAME: matcha-backend          # 작업 정의 내의 컨테이너 이름
 
 jobs:
@@ -30,7 +30,7 @@ jobs:
 
       - name: Build with Gradle
         run: |
-            cd backend
+            cd Matcha/backend
             chmod +x ./gradlew
             ./gradlew build -x test # 테스트는 일단 제외하고 빌드만 진행
 
@@ -49,7 +49,7 @@ jobs:
         id: build-image
         run: |
           # 백엔드 폴더로 이동 후 빌드
-          cd backend
+          cd Matcha/backend
           docker build -t ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }} .
           docker push ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
           echo "image=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}" >> $GITHUB_OUTPUT
