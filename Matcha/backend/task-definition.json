@@ -1,70 +1,80 @@
 {
-  "cpu": 0,
-  "environment": [
-    {
-      "name": "SPRING_AI_OPENAI_CHAT_OPTIONS_MODEL",
-      "value": "gpt-4o"
-    },
-    {
-      "name": "SPRING_MAIL_USERNAME",
-      "value": "glassdev25@gmail.com"
-    },
-    {
-      "name": "SPRING_DATASOURCE_PASSWORD",
-      "value": "<DATABASE_PASSWORD>"
-    },
-    {
-      "name": "SPRING_DATASOURCE_URL",
-      "value": "jdbc:mariadb://matcha-mariadb.c7i822wyw8pe.ap-northeast-2.rds.amazonaws.com:3306/matcha_world_prod_db"
-    },
-    {
-      "name": "SPRING_AI_OPENAI_API_KEY",
-      "value": "<OPENAI_API_KEY>"
-    },
-    {
-      "name": "TZ",
-      "value": "Asia/Seoul"
-    },
-    {
-      "name": "SPRING_PROFILES_ACTIVE",
-      "value": "prod"
-    },
-    {
-      "name": "SPRING_DATASOURCE_USERNAME",
-      "value": "matcha"
-    },
-    {
-      "name": "SPRING_MAIL_PASSWORD",
-      "value": "<MAIL_PASSWORD>"
-    },
-    {
-      "name": "SPRING_SQL_INIT_DATA_LOCATIONS",
-      "value": "classpath:db/init.sql"
-    }
+  "family": "matcha-backend-task",
+  "requiresCompatibilities": [
+    "FARGATE"
   ],
-  "essential": true,
-  "image": "<IMAGE_NAME>",
-  "logConfiguration": {
-    "logDriver": "awslogs",
-    "options": {
-      "awslogs-group": "/ecs/matcha-backend-task",
-      "awslogs-create-group": "true",
-      "awslogs-region": "ap-northeast-2",
-      "awslogs-stream-prefix": "ecs"
-    },
-    "secretOptions": []
-  },
-  "mountPoints": [],
-  "name": "matcha-backend",
-  "portMappings": [
+  "networkMode": "awsvpc",
+  "cpu": "256",
+  "memory": "512",
+  "containerDefinitions": [
     {
-      "appProtocol": "http",
-      "containerPort": 8080,
-      "hostPort": 8080,
-      "name": "matcha-backend-8080-tcp",
-      "protocol": "tcp"
+      "name": "matcha-backend",
+      "image": "<IMAGE_NAME>",
+      "cpu": 0,
+      "essential": true,
+      "portMappings": [
+        {
+          "name": "matcha-backend-8080-tcp",
+          "containerPort": 8080,
+          "hostPort": 8080,
+          "protocol": "tcp",
+          "appProtocol": "http"
+        }
+      ],
+      "environment": [
+        {
+          "name": "SPRING_AI_OPENAI_CHAT_OPTIONS_MODEL",
+          "value": "gpt-4o"
+        },
+        {
+          "name": "SPRING_MAIL_USERNAME",
+          "value": "glassdev25@gmail.com"
+        },
+        {
+          "name": "SPRING_DATASOURCE_PASSWORD",
+          "value": "<DATABASE_PASSWORD>"
+        },
+        {
+          "name": "SPRING_DATASOURCE_URL",
+          "value": "jdbc:mariadb://matcha-mariadb.c7i822wyw8pe.ap-northeast-2.rds.amazonaws.com:3306/matcha_world_prod_db"
+        },
+        {
+          "name": "SPRING_AI_OPENAI_API_KEY",
+          "value": "<OPENAI_API_KEY>"
+        },
+        {
+          "name": "TZ",
+          "value": "Asia/Seoul"
+        },
+        {
+          "name": "SPRING_PROFILES_ACTIVE",
+          "value": "prod"
+        },
+        {
+          "name": "SPRING_DATASOURCE_USERNAME",
+          "value": "matcha"
+        },
+        {
+          "name": "SPRING_MAIL_PASSWORD",
+          "value": "<MAIL_PASSWORD>"
+        },
+        {
+          "name": "SPRING_SQL_INIT_DATA_LOCATIONS",
+          "value": "classpath:db/init.sql"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/matcha-backend-task",
+          "awslogs-create-group": "true",
+          "awslogs-region": "ap-northeast-2",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "mountPoints": [],
+      "volumesFrom": [],
+      "systemControls": []
     }
-  ],
-  "systemControls": [],
-  "volumesFrom": []
+  ]
 }
