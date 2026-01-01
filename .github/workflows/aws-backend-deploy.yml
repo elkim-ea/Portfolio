@@ -3,7 +3,6 @@ name: Backend CI/CD to AWS ECS
 on:
   push:
     branches: [ "main" ] # main 브랜치에 push될 때 실행
-    paths: [ "backend/**" ] # backend 폴더 내 파일 변경 시에만 실행
   workflow_dispatch: # 수동 실행도 허용
 
 env:

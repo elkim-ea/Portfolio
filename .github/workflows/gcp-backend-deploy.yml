@@ -1,150 +1,150 @@
-name: Deploy Backend to GKE Autopilot
+# name: Deploy Backend to GKE Autopilot
 
-on:
-  workflow_dispatch:
-  push:
-    branches: ["main"]
+# on:
+#   workflow_dispatch:
+#   push:
+#     branches: ["main"]
 
-env:
-  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-  GAR_LOCATION: asia-northeast3
-  GAR_REPO: matcha-repo
-  IMAGE_NAME: matcha-backend
-  GKE_CLUSTER: ${{ secrets.GKE_CLUSTER }}
-  GKE_LOCATION: ${{ secrets.GKE_LOCATION }}
+# env:
+#   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+#   GAR_LOCATION: asia-northeast3
+#   GAR_REPO: matcha-repo
+#   IMAGE_NAME: matcha-backend
+#   GKE_CLUSTER: ${{ secrets.GKE_CLUSTER }}
+#   GKE_LOCATION: ${{ secrets.GKE_LOCATION }}
 
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
+# jobs:
+#   build-and-deploy:
+#     runs-on: ubuntu-latest
 
-    steps:
+#     steps:
 
-    # 1) Checkout
-    - name: Checkout Code
-      uses: actions/checkout@v4
+#     # 1) Checkout
+#     - name: Checkout Code
+#       uses: actions/checkout@v4
 
-    # 2) Google Cloud 인증.
-    - name: Authenticate to Google Cloud
-      uses: google-github-actions/auth@v2
-      with:
-        credentials_json: ${{ secrets.GCP_SA_KEY }}
+#     # 2) Google Cloud 인증.
+#     - name: Authenticate to Google Cloud
+#       uses: google-github-actions/auth@v2
+#       with:
+#         credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-    # Google Cloud CLI 설치 (공식 Action).
-    - name: Setup gcloud
-      uses: google-github-actions/setup-gcloud@v2
+#     # Google Cloud CLI 설치 (공식 Action).
+#     - name: Setup gcloud
+#       uses: google-github-actions/setup-gcloud@v2
 
-    # 🔥 3) GKE Auth Plugin 설치 (가장 중요)
-    - name: Install GKE Auth Plugin
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y apt-transport-https ca-certificates gnupg
+#     # 🔥 3) GKE Auth Plugin 설치 (가장 중요)
+#     - name: Install GKE Auth Plugin
+#       run: |
+#         sudo apt-get update
+#         sudo apt-get install -y apt-transport-https ca-certificates gnupg
 
-        # Google Cloud APT repo 등록
-        echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | \
-          sudo tee /etc/apt/sources.list.d/google-cloud-sdk.list
+#         # Google Cloud APT repo 등록
+#         echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | \
+#           sudo tee /etc/apt/sources.list.d/google-cloud-sdk.list
 
-        curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | \
-          sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
+#         curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | \
+#           sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
 
-        sudo apt-get update
-        sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
+#         sudo apt-get update
+#         sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
 
-    # gke-gcloud-auth-plugin 자동 탐색 및 PATH 추가
-    - name: Add GKE Auth Plugin to PATH
-      run: |
-        # gcloud가 설치된 경로 확인
-        SDK_ROOT=$(gcloud info --format='value(installation.sdk_root)')
-        echo "SDK_ROOT = $SDK_ROOT"
+#     # gke-gcloud-auth-plugin 자동 탐색 및 PATH 추가
+#     - name: Add GKE Auth Plugin to PATH
+#       run: |
+#         # gcloud가 설치된 경로 확인
+#         SDK_ROOT=$(gcloud info --format='value(installation.sdk_root)')
+#         echo "SDK_ROOT = $SDK_ROOT"
 
-        # 플러그인 파일 위치 찾기
-        PLUGIN_PATH=$(find $SDK_ROOT -name gke-gcloud-auth-plugin | head -n 1)
+#         # 플러그인 파일 위치 찾기
+#         PLUGIN_PATH=$(find $SDK_ROOT -name gke-gcloud-auth-plugin | head -n 1)
 
-        if [ -z "$PLUGIN_PATH" ]; then
-          echo "❌ gke-gcloud-auth-plugin not found in SDK_ROOT. Searching globally..."
-          PLUGIN_PATH=$(find / -name gke-gcloud-auth-plugin 2>/dev/null | head -n 1)
-        fi
+#         if [ -z "$PLUGIN_PATH" ]; then
+#           echo "❌ gke-gcloud-auth-plugin not found in SDK_ROOT. Searching globally..."
+#           PLUGIN_PATH=$(find / -name gke-gcloud-auth-plugin 2>/dev/null | head -n 1)
+#         fi
 
-        if [ -z "$PLUGIN_PATH" ]; then
-          echo "❌ ERROR: gke-gcloud-auth-plugin not found anywhere!"
-          exit 1
-        fi
+#         if [ -z "$PLUGIN_PATH" ]; then
+#           echo "❌ ERROR: gke-gcloud-auth-plugin not found anywhere!"
+#           exit 1
+#         fi
 
-        echo "✅ Found plugin at: $PLUGIN_PATH"
-        echo "$(dirname $PLUGIN_PATH)" >> $GITHUB_PATH
+#         echo "✅ Found plugin at: $PLUGIN_PATH"
+#         echo "$(dirname $PLUGIN_PATH)" >> $GITHUB_PATH
 
-        which gke-gcloud-auth-plugin || true
+#         which gke-gcloud-auth-plugin || true
     
-    # 4) 플러그인 경로 확인
-    - name: Verify plugin
-      run: |
-        which gke-gcloud-auth-plugin || echo "Plugin not in PATH"
-        gke-gcloud-auth-plugin --version || echo "Plugin missing"
+#     # 4) 플러그인 경로 확인
+#     - name: Verify plugin
+#       run: |
+#         which gke-gcloud-auth-plugin || echo "Plugin not in PATH"
+#         gke-gcloud-auth-plugin --version || echo "Plugin missing"
 
 
-    # 4) 플러그인 활성화
-    - name: Enable GKE Auth Plugin Env
-      run: |
-        echo "USE_GKE_GCLOUD_AUTH_PLUGIN=True" >> $GITHUB_ENV
+#     # 4) 플러그인 활성화
+#     - name: Enable GKE Auth Plugin Env
+#       run: |
+#         echo "USE_GKE_GCLOUD_AUTH_PLUGIN=True" >> $GITHUB_ENV
         
     
 
-    # 5) GKE 연결
-    - name: Authenticate to GKE
-      run: |
-        gcloud container clusters get-credentials $GKE_CLUSTER \
-          --region $GKE_LOCATION \
-          --project $PROJECT_ID
+#     # 5) GKE 연결
+#     - name: Authenticate to GKE
+#       run: |
+#         gcloud container clusters get-credentials $GKE_CLUSTER \
+#           --region $GKE_LOCATION \
+#           --project $PROJECT_ID
 
-    # 6) Backend JAR Build
-    - name: Build Backend JAR
-      run: |
-        cd Matcha/backend
-        chmod +x ./gradlew
-        ./gradlew clean build -x test
+#     # 6) Backend JAR Build
+#     - name: Build Backend JAR
+#       run: |
+#         cd Matcha/backend
+#         chmod +x ./gradlew
+#         ./gradlew clean build -x test
 
-    # 7) Docker Build
-    - name: Build Docker Image
-      run: |
-        docker build -f ./Matcha/backend/Dockerfile \
-        -t "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest" \
-        ./Matcha/backend
+#     # 7) Docker Build
+#     - name: Build Docker Image
+#       run: |
+#         docker build -f ./Matcha/backend/Dockerfile \
+#         -t "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest" \
+#         ./Matcha/backend
 
-    # 8) Artifact Registry 로그인
-    - name: Docker login to GAR
-      run: |
-        gcloud auth print-access-token | \
-          docker login -u oauth2accesstoken --password-stdin https://$GAR_LOCATION-docker.pkg.dev
+#     # 8) Artifact Registry 로그인
+#     - name: Docker login to GAR
+#       run: |
+#         gcloud auth print-access-token | \
+#           docker login -u oauth2accesstoken --password-stdin https://$GAR_LOCATION-docker.pkg.dev
 
-    # 9) Push Docker Image
-    - name: Push Docker Image
-      run: |
-        docker push "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest"
+#     # 9) Push Docker Image
+#     - name: Push Docker Image
+#       run: |
+#         docker push "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$GAR_REPO/$IMAGE_NAME:latest"
 
-    # gcp-backend-deploy.yml (수정된 10) Deploy to GKE Autopilot 단계)
+#     # gcp-backend-deploy.yml (수정된 10) Deploy to GKE Autopilot 단계)
 
-    # 10) Deploy to GKE Autopilot
-    - name: Deploy All Core Kubernetes Resources
-      run: |
-        echo "--- Deploying Core Infrastructure (DB, Secrets, ConfigMaps) ---"
+#     # 10) Deploy to GKE Autopilot
+#     - name: Deploy All Core Kubernetes Resources
+#       run: |
+#         echo "--- Deploying Core Infrastructure (DB, Secrets, ConfigMaps) ---"
         
-        # 1. 시크릿 적용 (DB 인증 정보)
-        # ❗ db-secret.yaml 파일명을 확인하여 적용합니다.
-        kubectl apply -f k8s/db-secret.yaml
+#         # 1. 시크릿 적용 (DB 인증 정보)
+#         # ❗ db-secret.yaml 파일명을 확인하여 적용합니다.
+#         kubectl apply -f k8s/db-secret.yaml
         
-        # 2. ConfigMap 적용 (DB 초기 스키마 및 권한 설정)
-        # ❗ mariadb-initdb-config.yaml 파일명을 확인하여 적용합니다.
-        kubectl apply -f k8s/mariadb-initdb-config.yaml
+#         # 2. ConfigMap 적용 (DB 초기 스키마 및 권한 설정)
+#         # ❗ mariadb-initdb-config.yaml 파일명을 확인하여 적용합니다.
+#         kubectl apply -f k8s/mariadb-initdb-config.yaml
         
-        # 3. DB Deployment 및 Service 적용 (MariaDB)
-        # ❗ DB Pod가 새로운 ConfigMap을 로드하도록 재배포합니다.
-        kubectl apply -f k8s/mariadb-deployment.yaml
-        kubectl apply -f k8s/mariadb-service.yaml
+#         # 3. DB Deployment 및 Service 적용 (MariaDB)
+#         # ❗ DB Pod가 새로운 ConfigMap을 로드하도록 재배포합니다.
+#         kubectl apply -f k8s/mariadb-deployment.yaml
+#         kubectl apply -f k8s/mariadb-service.yaml
         
-        echo "--- Deploying Backend Service ---"
+#         echo "--- Deploying Backend Service ---"
         
-        # 4. Backend Deployment 및 Service 적용
-        kubectl apply -f k8s/backend-deployment.yaml
-        kubectl apply -f k8s/backend-service.yaml
+#         # 4. Backend Deployment 및 Service 적용
+#         kubectl apply -f k8s/backend-deployment.yaml
+#         kubectl apply -f k8s/backend-service.yaml
         
-        # 5. 기타 Backend 클러스터 IP Service 적용 (필요하다면)
-        kubectl apply -f k8s/matcha-backend-clusterip.yaml
+#         # 5. 기타 Backend 클러스터 IP Service 적용 (필요하다면)
+#         kubectl apply -f k8s/matcha-backend-clusterip.yaml
