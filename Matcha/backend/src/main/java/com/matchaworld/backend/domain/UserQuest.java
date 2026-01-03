@@ -29,9 +29,14 @@ public class UserQuest {
     @JoinColumn(name = "QUEST_ID", nullable = false)
     private Quest quest;
 
+    // @Builder.Default
+    // @Enumerated(EnumType.STRING)
+    // @Column(name = "STATUS", columnDefinition = "ENUM('PENDING', 'SUCCESS', 'FAILED')", nullable = false)
+    // private Status status = Status.PENDING;
+
     @Builder.Default
     @Enumerated(EnumType.STRING)
-    @Column(name = "STATUS", columnDefinition = "ENUM('PENDING', 'SUCCESS', 'FAILED')", nullable = false)
+    @Column(name = "STATUS", length = 20, nullable = false) // columnDefinition을 제거하세요!
     private Status status = Status.PENDING;
 
     @Builder.Default
