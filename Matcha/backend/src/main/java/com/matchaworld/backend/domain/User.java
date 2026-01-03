@@ -63,7 +63,7 @@ public class User {
     @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "ROLE", length = 10, nullable = false) // length를 지정해주는 것이 좋습니다.
-    private Role role;
+    private Role role = Role.USER;
 
     @CreatedDate
     @Column(name = "CREATED_AT", nullable = false, updatable = false)
