@@ -44,7 +44,7 @@ public class LifeLog {
     private String content;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "CATEGORY", columnDefinition = "ENUM('E', 'S')", nullable = false)
+    @Column(name = "CATEGORY", length = 2, nullable = false)
     private Category category;
 
     @Column(name = "LOGGED_AT", nullable = false)
