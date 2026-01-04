@@ -1,74 +1,74 @@
-name: Backend CI/CD to AWS ECS
+# name: Backend CI/CD to AWS ECS
 
-on:
-  push:
-    branches: [ "main" ] # main 브랜치에 push될 때 실행
-  workflow_dispatch: # 수동 실행도 허용
+# on:
+#   push:
+#     branches: [ "main" ] # main 브랜치에 push될 때 실행
+#   workflow_dispatch: # 수동 실행도 허용
 
-env:
-  AWS_REGION: ap-northeast-2
-  ECR_REPOSITORY: matcha-backend          # AWS ECR 레포지토리 이름
-  ECS_SERVICE: matcha-backend-service     # ECS 서비스 이름
-  ECS_CLUSTER: matcha-cluster             # ECS 클러스터 이름
-  ECS_TASK_DEFINITION: Matcha/backend/task-definition.json # 아까 만드신 파일 경로
-  CONTAINER_NAME: matcha-backend          # 작업 정의 내의 컨테이너 이름
+# env:
+#   AWS_REGION: ap-northeast-2
+#   ECR_REPOSITORY: matcha-backend          # AWS ECR 레포지토리 이름
+#   ECS_SERVICE: matcha-backend-service     # ECS 서비스 이름
+#   ECS_CLUSTER: matcha-cluster             # ECS 클러스터 이름
+#   ECS_TASK_DEFINITION: Matcha/backend/task-definition.json # 아까 만드신 파일 경로
+#   CONTAINER_NAME: matcha-backend          # 작업 정의 내의 컨테이너 이름
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v4
 
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-            java-version: '21'
-            distribution: 'temurin'
-            cache: gradle
+#       - name: Set up JDK 21
+#         uses: actions/setup-java@v4
+#         with:
+#             java-version: '21'
+#             distribution: 'temurin'
+#             cache: gradle
 
-      - name: Build with Gradle
-        run: |
-            cd Matcha/backend
-            chmod +x ./gradlew
-            ./gradlew build -x test # 테스트는 일단 제외하고 빌드만 진행
+#       - name: Build with Gradle
+#         run: |
+#             cd Matcha/backend
+#             chmod +x ./gradlew
+#             ./gradlew build -x test # 테스트는 일단 제외하고 빌드만 진행
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+#       - name: Configure AWS credentials
+#         uses: aws-actions/configure-aws-credentials@v4
+#         with:
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
+#       - name: Login to Amazon ECR
+#         id: login-ecr
+#         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build, tag, and push image to Amazon ECR
-        id: build-image
-        run: |
-          # 백엔드 폴더로 이동 후 빌드
-          cd Matcha/backend
-          docker build -t ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }} .
-          docker push ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
-          echo "image=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}" >> $GITHUB_OUTPUT
+#       - name: Build, tag, and push image to Amazon ECR
+#         id: build-image
+#         run: |
+#           # 백엔드 폴더로 이동 후 빌드
+#           cd Matcha/backend
+#           docker build -t ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }} .
+#           docker push ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+#           echo "image=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}" >> $GITHUB_OUTPUT
 
-      - name: Fill in the new image ID in the Amazon ECS task definition
-        id: task-def
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
-        with:
-          task-definition: ${{ env.ECS_TASK_DEFINITION }}
-          container-name: ${{ env.CONTAINER_NAME }}
-          image: ${{ steps.build-image.outputs.image }}
-          environment-variables: |
-            SPRING_DATASOURCE_PASSWORD=${{ secrets.RDS_PASSWORD }}
-            SPRING_AI_OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
-            SPRING_MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
+#       - name: Fill in the new image ID in the Amazon ECS task definition
+#         id: task-def
+#         uses: aws-actions/amazon-ecs-render-task-definition@v1
+#         with:
+#           task-definition: ${{ env.ECS_TASK_DEFINITION }}
+#           container-name: ${{ env.CONTAINER_NAME }}
+#           image: ${{ steps.build-image.outputs.image }}
+#           environment-variables: |
+#             SPRING_DATASOURCE_PASSWORD=${{ secrets.RDS_PASSWORD }}
+#             SPRING_AI_OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+#             SPRING_MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
 
-      - name: Deploy Amazon ECS task definition
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-        with:
-          task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: ${{ env.ECS_SERVICE }}
-          cluster: ${{ env.ECS_CLUSTER }}
-          wait-for-service-stability: true
+#       - name: Deploy Amazon ECS task definition
+#         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+#         with:
+#           task-definition: ${{ steps.task-def.outputs.task-definition }}
+#           service: ${{ env.ECS_SERVICE }}
+#           cluster: ${{ env.ECS_CLUSTER }}
+#           wait-for-service-stability: true
