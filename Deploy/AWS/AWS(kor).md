@@ -14,7 +14,6 @@ GitHub Actions를 활용해 **자동 빌드/배포(CI/CD)** 까지 구성한 실
 - Frontend는 **S3 + CloudFront** 로 정적 서비스 제공  
 - Private Subnet 리소스의 Outbound 트래픽은 **NAT Gateway** 기반 처리
 
----
 
 ## 📌 1. 전체 아키텍처 개요
 
@@ -25,7 +24,6 @@ GitHub Actions를 활용해 **자동 빌드/배포(CI/CD)** 까지 구성한 실
 
 <img src="./docs/architecture-ecs-final.png" width="800">
 
----
 
 ## 🔄 2. CI/CD + Runtime 전체 동작 흐름
 
@@ -73,7 +71,6 @@ GitHub Actions를 활용해 **자동 빌드/배포(CI/CD)** 까지 구성한 실
 - 최소 Task 수 유지 (`desiredCount = 1`)
 - 필요 시 Auto Scaling 확장 가능 구조
 
----
 
 ## 🧱 3. AWS 리소스 구성 (Account / Network / Registry / ECS)
 
@@ -88,7 +85,6 @@ GitHub Actions를 활용해 **자동 빌드/배포(CI/CD)** 까지 구성한 실
 
 <img src="./docs/aws-account-region.png" width="700">
 
----
 
 ### ✔ 3-2) VPC / Subnet 구성
 
@@ -108,7 +104,6 @@ GitHub Actions를 활용해 **자동 빌드/배포(CI/CD)** 까지 구성한 실
 
 <img src="./docs/aws-subnet-list.png" width="700">
 
----
 
 ### ✔ 3-3) NAT Gateway (Outbound 전용)
 
@@ -124,7 +119,6 @@ GitHub Actions를 활용해 **자동 빌드/배포(CI/CD)** 까지 구성한 실
 
 <img src="./docs/aws-nat-gateway.png" width="700">
 
----
 
 ### ✔ 3-4) Amazon ECR (Docker Images 저장소)
 
@@ -142,7 +136,6 @@ GitHub Actions가 이미지를 Push하고 ECS가 Runtime에 Pull
 
 <img src="./docs/aws-ecr-images.png" width="700">
 
----
 
 ## ⚙️ 4. GitHub Actions CI/CD 구성
 
@@ -152,7 +145,6 @@ GitHub Actions가 이미지를 Push하고 ECS가 Runtime에 Pull
 
 <img src="./docs/aws-github-actions-runs.png" width="700">
 
----
 
 ### ✔ 4-2) Repository Secrets 구성
 
@@ -169,7 +161,6 @@ GitHub Actions가 이미지를 Push하고 ECS가 Runtime에 Pull
 
 <img src="./docs/aws-github-secrets.png" width="700">
 
----
 
 ### ✔ 4-3) Workflow 동작 요약
 
@@ -198,7 +189,6 @@ on:
 실제 애플리케이션과 데이터베이스는 **Private Subnet** 에 배치해  
 외부 직접 접근을 차단했습니다.
 
----
 
 ### ✔ 5-1) 리소스 구성 요약
 
@@ -211,7 +201,6 @@ on:
 
 <img src="./docs/aws-ecs-service-task.png" width="700">
 
----
 
 ### ✔ 5-2) ECS Cluster / Service 구성
 
@@ -230,7 +219,6 @@ ECS Service는 다음 역할을 수행합니다:
 📌 ECS Cluster는 **논리적 리소스**이며,  
 실제 네트워크에 배치되는 것은 **ECS Task** 입니다.
 
----
 
 ### ✔ 5-3) ECS Task Definition 구성
 
@@ -250,7 +238,6 @@ ECS Task는 Spring Boot 기반 Backend 애플리케이션을 실행합니다.
 
 <img src="./docs/aws-task-definition.png" width="700">
 
----
 
 ### ✔ 5-4) 배포 및 롤링 업데이트 방식
 
@@ -265,7 +252,6 @@ ECS Service는 **Rolling Update 방식**으로 배포됩니다.
 📌 Health Check 실패 시 트래픽은 기존 Task로 유지되어  
 **서비스 중단 없이 배포 실패를 감지**할 수 있습니다.
 
----
 
 ## 🎉 6. 서비스 결과 화면 (실제 동작)
 
@@ -284,7 +270,6 @@ ECS Service는 **Rolling Update 방식**으로 배포됩니다.
 
 <img src="./docs/aws-result-admin.png" width="700">
 
----
 
 ## 📝 7. 전체 프로젝트 구조
 

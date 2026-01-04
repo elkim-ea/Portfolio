@@ -7,7 +7,6 @@
 > - `PORTFOLIO/Deploy/GCP/`  
 > - `PORTFOLIO/Deploy/NCP/` 
 
----
 
 ## 1. Common Project Overview
 
@@ -27,7 +26,6 @@ I deployed the **same application** to three different cloud providers.
 
 > The key point is that I designed **different infrastructure and service combinations for the same app**.
 
----
 
 ## 2. Architecture Summary by Cloud
 
@@ -58,7 +56,6 @@ I deployed the **same application** to three different cloud providers.
   - ACG (Access Control Group) used to control ports and source IPs
   - LB Health Check: `/actuator/health`
 
----
 
 ### 2.2 GCP – GKE Autopilot + Artifact Registry + GitHub Actions
 
@@ -85,7 +82,6 @@ I deployed the **same application** to three different cloud providers.
   - Cloud NAT handles outbound traffic from the cluster
   - Inbound traffic enters via GKE Service(type: LoadBalancer)
 
----
 
 ### 2.3 AWS – ECS Fargate + ALB + S3/CloudFront + RDS
 
@@ -115,7 +111,6 @@ I deployed the **same application** to three different cloud providers.
     - ECS SG → RDS SG (port 3306)
   - ALB Health Check: `/actuator/health` for target status
 
----
 
 ## 3. Key Comparison (Table View)
 
@@ -128,7 +123,6 @@ I deployed the **same application** to three different cloud providers.
 | Node management    | I manage VMs manually                  | Autopilot manages nodes                       | Fargate (no node management, task-level only)   |
 | Scaling model      | Manual server/container scaling        | Change replica count, HPA possible            | Change desiredCount / Auto Scaling              |
 
----
 
 ### 3.2 Frontend Deployment Patterns
 
@@ -138,7 +132,6 @@ I deployed the **same application** to three different cloud providers.
 | Public access  | ❌ Internal only                               | ✅ External IP via Service(LB)                      | ✅ Custom domain + HTTPS                          |
 | Characteristics| Simple setup via docker-compose with backend   | Frontend also runs as a container in Kubernetes     | Common production pattern using S3 + CloudFront   |
 
----
 
 ### 3.3 Backend / DB Design
 
@@ -148,7 +141,6 @@ I deployed the **same application** to three different cloud providers.
 | DB        | MariaDB container in docker-compose                  | MariaDB Pod (ClusterIP, in-cluster only)        | **RDS MariaDB (Managed Service)**                        |
 | HealthCheck | LB: `/actuator/health`                            | Service / Pod + `/actuator/health`             | ALB Health Check: `/actuator/health`                     |
 
----
 
 ### 3.4 CI/CD Pipeline Comparison
 
@@ -160,7 +152,6 @@ I deployed the **same application** to three different cloud providers.
 | Deployment    | `ssh` / `scp` + `docker-compose up -d`                          | `kubectl apply` (Deployment & Service)              | `aws ecs update-service` (rolling update with new Tasks)   |
 | Key point     | On-premise style CI/CD with Jenkins                             | Container-native CI/CD and Kubernetes deployment    | ECR + ECS + ALB with blue/green-style rolling deployments  |
 
----
 
 ### 3.5 Network / Security Architecture
 
@@ -171,7 +162,6 @@ I deployed the **same application** to three different cloud providers.
 | Inbound        | NCP Load Balancer → Backend container                       | Service(type: LoadBalancer) → GKE Pod                 | Route53 → (ALB / CloudFront) → ECS or S3                         |
 | Security       | ACG-based port & IP control                                | VPC + GKE security + Service/Ingress policies         | SG reference chain (ALB SG → ECS SG → RDS SG)                    |
 
----
 
 ## 4. Design Rationale (Why This Architecture?)
 
@@ -215,7 +205,6 @@ I deployed the **same application** to three different cloud providers.
 
 > This project reflects the kind of architecture commonly used in real companies for production workloads.
 
----
 
 ## 5. Overall Reflection
 
@@ -231,7 +220,6 @@ I deployed the **same application** to three different cloud providers.
     - The core DevOps flow is always  
       **Build → Create image → Push to registry → Runtime pulls → Shift traffic safely**.
 
----
 
 ## 6. One-Line Portfolio Summary
 
