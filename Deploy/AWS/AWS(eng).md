@@ -30,7 +30,7 @@ Below is an overview of the system’s complete **CI/CD and runtime flow**.
 
 **Final ECS Fargate Architecture Diagram**
 
-<img src="./docs/architecture-ecs-final.png" width="800">
+<img src="./docs(eng)/architecture-ecs-final.png" width="800">
 
 ### Architecture Design Principles
 
@@ -63,7 +63,7 @@ while resources requiring frequent operational changes are managed through CI/CD
 
 GitHub Actions Execution Result
 
-<img src="./docs/github-actions-runs.png" width="700">
+<img src="./docs(eng)/github-actions-runs.png" width="700">
 
 ## 3. Terraform-Based Infrastructure as Code (IaC)
 
@@ -124,11 +124,11 @@ resource "aws_vpc" "main" {
 
 Terraform Apply Success Screen
 
-<img src="./docs/terraform-apply-success.png" width="700">
+<img src="./docs(eng)/terraform-apply-success.png" width="700">
 
 Terraform File Structure
 
-<img src="./docs/terraform-aws-tree.png" width="700">
+<img src="./docs(eng)/terraform-aws-tree.png" width="700">
 
 
 ## 4. AWS Network Architecture (Terraform Redesign)
@@ -145,7 +145,7 @@ the network infrastructure was rebuilt using Terraform.
 | Cloud | AWS |
 | Region | ap-northeast-2 (Seoul) |
 
-<img src="./docs/aws-account-region.png" width="700">
+<img src="./docs(eng)/aws-account-region.png" width="700">
 
 ### ✔ 4-2) VPC Configuration (Terraform)
 
@@ -154,7 +154,7 @@ the network infrastructure was rebuilt using Terraform.
 | VPC Name | matcha-vpc |
 | CIDR | 10.0.0.0/16 |
 
-<img src="./docs/aws-vpc-list.png" width="700">
+<img src="./docs(eng)/aws-vpc-list.png" width="700">
 
 ### ✔ 4-3) Subnet Configuration
 
@@ -163,7 +163,7 @@ the network infrastructure was rebuilt using Terraform.
 | Public Subnet | a / c | 10.0.1.0/24, 10.0.2.0/24 | ALB, NAT Gateway |
 | Private Subnet | a / c | 10.0.11.0/24, 10.0.12.0/24 | ECS Fargate, RDS |
 
-<img src="./docs/aws-subnet-list.png" width="700">
+<img src="./docs(eng)/aws-subnet-list.png" width="700">
 
 #### 🔹 Design Points
 
@@ -182,7 +182,7 @@ the network infrastructure was rebuilt using Terraform.
 | vpce-sg | VPC Endpoint | Control VPC Endpoint access |
 | default | Default | Intentionally unused |
 
-<img src="./docs/aws-security-group.png" width="700">
+<img src="./docs(eng)/aws-security-group.png" width="700">
 
 - Backend ECS is accessible **only through ALB**
 - RDS is accessible **only from ECS Task Security Groups**
@@ -196,8 +196,8 @@ the network infrastructure was rebuilt using Terraform.
 
 Application deployment is fully automated using GitHub Actions.
 
-<img src="./docs/github-secrets-aws.png" width="700">
-<img src="./docs/aws-ecr-images.png" width="700">
+<img src="./docs(eng)/github-secrets-aws.png" width="700">
+<img src="./docs(eng)/aws-ecr-images.png" width="700">
 
 ### ✔ CI/CD Responsibility Separation
 
@@ -253,8 +253,8 @@ By choosing Fargate:
 - Launch Type: **Fargate**
 - Network Mode: `awsvpc`
 
-<img src="./docs/aws-ecs-cluster.png" width="700">
-<img src="./docs/aws-ecs-service-running.png" width="700">
+<img src="./docs(eng)/aws-ecs-cluster.png" width="700">
+<img src="./docs(eng)/aws-ecs-service-running.png" width="700">
 
 The ECS Service handles:
 
@@ -275,7 +275,7 @@ The ECS Task Definition represents the execution unit for the backend applicatio
 - Health Check Path: `/actuator/health`  
 - Logging: Integrated with CloudWatch Logs  
 
-<img src="./docs/aws-task-definition.png" width="700">
+<img src="./docs(eng)/aws-task-definition.png" width="700">
 
 Task Definitions are managed by **revision**,  
 allowing immediate rollback to a previous revision in case of deployment failure.
@@ -290,8 +290,8 @@ The ECS Service uses a **rolling update strategy**:
 4. Traffic is routed after ALB health checks pass  
 5. Existing tasks are drained and terminated  
 
-<img src="./docs/aws-alb-target-group.png" width="700">
-<img src="./docs/aws-alb-healthcheck.png" width="700">
+<img src="./docs(eng)/aws-alb-target-group.png" width="700">
+<img src="./docs(eng)/aws-alb-healthcheck.png" width="700">
 
 If a health check fails,  
 traffic remains on the existing tasks, ensuring **no service interruption**.
@@ -303,7 +303,7 @@ Current Implementation: Database credentials and AWS API keys are managed using 
 
 Security Roadmap: To achieve enterprise-grade security, there is a plan to migrate to AWS Secrets Manager. This will allow for automatic secret rotation and centralized auditing, further reducing the risk of credential exposure.
 
-<img src="./docs/aws-iam.png" width="700">
+<img src="./docs(eng)/aws-iam.png" width="700">
 
 ## 7. Service Results and Validation
 
@@ -314,19 +314,19 @@ the service was verified to be operating correctly in production.
 
 https://matchaworld.shop
 
-<img src="./docs/aws-result-frontend.png" width="700">
+<img src="./docs(eng)/aws-result-frontend.png" width="700">
 
 ### Backend API (CloudWatch)
 
-<img src="./docs/aws-result-backend-api.png" width="700">
+<img src="./docs(eng)/aws-result-backend-api.png" width="700">
 
 ### Request Flow
 
 Frontend: Client → Route53 → CloudFront → S3
 Backend:  Client → Route53 → ALB → ECS Task → RDS
 
-<img src="./docs/aws-result-login.png" width="700">
-<img src="./docs/aws-result-admin.png" width="700">
+<img src="./docs(eng)/aws-result-login.png" width="700">
+<img src="./docs(eng)/aws-result-admin.png" width="700">
 
 DNS records are intentionally excluded from CI/CD automation,
 as Route 53 serves as a stable traffic entry point rather than a deployment target.
@@ -356,8 +356,8 @@ PORTFOLIO
 
 ## Key Summary
 
-✔ Experience operating serverless containers with ECS Fargate
-✔ CI/CD automation using GitHub Actions
-✔ Recognized the absence of IaC as a problem and redesigned infrastructure using Terraform
-✔ Understood the limitations of console-driven AWS environments and improved them structurally
-✔ Designed a DevOps-oriented architecture with operations, security, and reproducibility in mind
+✔ Experience operating serverless containers with ECS Fargate                
+✔ CI/CD automation using GitHub Actions                         
+✔ Recognized the absence of IaC as a problem and redesigned infrastructure using Terraform                       
+✔ Understood the limitations of console-driven AWS environments and improved them structurally                         
+✔ Designed a DevOps-oriented architecture with operations, security, and reproducibility in mind                    

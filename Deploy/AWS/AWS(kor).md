@@ -336,10 +336,10 @@ PORTFOLIO
 
 ## 핵심 요약
 
-✔ ECS Fargate 기반 Serverless Container 운영 경험
-✔ GitHub Actions 기반 CI/CD 자동화 구축
-✔ IaC 부재를 문제로 인식하고 Terraform으로 인프라 재설계
-✔ 콘솔 중심 AWS 환경의 한계를 이해하고 구조적으로 개선
-✔ 운영 · 보안 · 재현성을 고려한 DevOps 관점 아키텍처 설계
+✔ ECS Fargate 기반 Serverless Container 운영 경험            
+✔ GitHub Actions 기반 CI/CD 자동화 구축              
+✔ IaC 부재를 문제로 인식하고 Terraform으로 인프라 재설계                 
+✔ 콘솔 중심 AWS 환경의 한계를 이해하고 구조적으로 개선                   
+✔ 운영 · 보안 · 재현성을 고려한 DevOps 관점 아키텍처 설계                      
 
 
